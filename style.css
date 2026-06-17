@@ -315,18 +315,20 @@ ul {
   position: absolute;
   inset: 0;
   z-index: 0;
+  background-image: url('images/Capriccio/BoloProdutos.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .hero-bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.05);
-  transition: transform 10s ease;
+  display: none;
 }
 
-.hero:hover .hero-bg img {
-  transform: scale(1);
+@supports (-webkit-touch-callout: none) {
+  .hero-bg {
+    background-attachment: scroll;
+  }
 }
 
 .hero-overlay {
@@ -1711,17 +1713,30 @@ ul {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* ===== CONTACT SECTION — vidro fosco sobre wave ===== */
+/* ===== CONTACT SECTION — cards sólidos e legíveis sobre a onda ===== */
 #contato .contact-wrapper {
   position: relative;
 }
-#contato .contact-info,
-#contato .contact-form {
-  background: rgba(255, 248, 236, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+#contato .contact-info {
+  background: linear-gradient(145deg, #3E2415 0%, #2C1810 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(197, 151, 59, 0.15);
+  border: 1px solid rgba(197, 151, 59, 0.3);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(197, 151, 59, 0.15);
+}
+#contato .contact-form {
+  background: #FFF8EC;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(197, 151, 59, 0.2);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 40px;
 }
 
 /* ===== CURSOR PERSONALIZADO (desktop) ===== */
@@ -1778,4 +1793,326 @@ ul {
 
   .scroll-wheel { animation: none; }
   .hero-scroll-hint { animation: none; opacity: 1; }
+}
+
+/* ======================================================
+   LOADING SCREEN
+   ====================================================== */
+
+/* =====================================================
+   LOADING SCREEN — versão premium
+   ===================================================== */
+
+body.loading-active { overflow: hidden; }
+
+/* ── Tela principal ── */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #1a0d07;   /* mais escuro que brown-dark para contraste */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Sem transition aqui — as curtinas fazem a saída */
+}
+
+/* Quando dismiss, as curtinas deslizam e depois a tela some */
+#loading-screen.hide {
+  pointer-events: none;
+}
+#loading-screen.hide .loading-curtain--top {
+  transform: translateY(-100%);
+}
+#loading-screen.hide .loading-curtain--bottom {
+  transform: translateY(100%);
+}
+#loading-screen.hide .loading-content {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+/* Após as cortinas saírem, o fundo some */
+#loading-screen.done {
+  opacity: 0;
+  transition: opacity 0.35s ease 0.55s;
+  visibility: hidden;
+}
+
+/* ── Canvas de partículas ── */
+#loading-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ── Brilhos de canto ── */
+.loading-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.18;
+}
+.loading-glow--tl {
+  top: -120px; left: -120px;
+  background: radial-gradient(circle, #C5973B 0%, transparent 70%);
+}
+.loading-glow--br {
+  bottom: -120px; right: -120px;
+  background: radial-gradient(circle, #7A5233 0%, transparent 70%);
+}
+
+/* ── Conteúdo central ── */
+.loading-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  animation: fadeInUp 0.9s ease-out 0.1s both;
+}
+
+/* ── Logo wrap + anéis ── */
+.loading-logo-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inner circle com fundo sutil */
+.loading-logo-inner {
+  position: relative;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(197,151,59,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.loading-logo {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(197, 151, 59, 0.6));
+  animation: loadingLogoPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes loadingLogoPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 18px rgba(197, 151, 59, 0.45));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 38px rgba(197, 151, 59, 0.8))
+            drop-shadow(0 0 60px rgba(197, 151, 59, 0.3));
+    transform: scale(1.05);
+  }
+}
+
+/* Anéis orbitais */
+.loading-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+}
+
+.loading-ring--1 {
+  inset: 0;
+  border-top-color:    rgba(197, 151, 59, 1);
+  border-right-color:  rgba(197, 151, 59, 0.25);
+  border-bottom-color: transparent;
+  border-left-color:   rgba(197, 151, 59, 0.1);
+  animation: spinCW 1.6s linear infinite;
+}
+
+.loading-ring--2 {
+  inset: 14px;
+  border-bottom-color: rgba(232, 213, 163, 0.8);
+  border-left-color:   rgba(232, 213, 163, 0.2);
+  border-top-color:    transparent;
+  border-right-color:  rgba(232, 213, 163, 0.08);
+  animation: spinCCW 2.4s linear infinite;
+}
+
+.loading-ring--3 {
+  inset: 28px;
+  border: 1px solid transparent;
+  border-top-color:   rgba(197, 151, 59, 0.5);
+  border-right-color: rgba(197, 151, 59, 0.12);
+  animation: spinCW 3.8s linear infinite;
+}
+
+@keyframes spinCW  { to { transform: rotate(360deg);  } }
+@keyframes spinCCW { to { transform: rotate(-360deg); } }
+
+/* ── Texto da marca ── */
+.loading-brand {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loading-brand-name {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-gold);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(197, 151, 59, 0.4);
+}
+
+.loading-tagline {
+  font-family: var(--font-elegant);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--color-gold-pale);
+  letter-spacing: 0.18em;
+  opacity: 0.8;
+}
+
+/* ── Ornamento dourado ── */
+.loading-ornament {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.loading-ornament-line {
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,151,59,0.7), transparent);
+}
+.loading-ornament-diamond {
+  display: block;
+  width: 7px;
+  height: 7px;
+  background: var(--color-gold);
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(197,151,59,0.8);
+}
+
+/* ── Barra de progresso ── */
+.loading-bar-wrap {
+  width: 220px;
+  height: 2px;
+  background: rgba(197, 151, 59, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.loading-bar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(197,151,59,0.06) 50%, transparent 100%);
+}
+
+.loading-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-brown-light), var(--color-gold), var(--color-gold-light));
+  border-radius: 2px;
+  transition: width 0.18s ease;
+  box-shadow: 0 0 10px rgba(197, 151, 59, 0.7), 0 0 20px rgba(197, 151, 59, 0.3);
+  position: relative;
+}
+/* Brilho correndo na barra */
+.loading-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  background: var(--color-gold-light);
+  border-radius: 50%;
+  box-shadow: 0 0 8px 2px rgba(212, 173, 90, 0.9);
+}
+
+/* ── Dica de scroll ── */
+.loading-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(197, 151, 59, 0.65);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.loading-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mouse icon animado */
+.loading-hint-mouse {
+  width: 18px;
+  height: 28px;
+  border: 1.5px solid rgba(197,151,59,0.6);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+  flex-shrink: 0;
+}
+.loading-hint-wheel {
+  width: 3px;
+  height: 6px;
+  background: var(--color-gold);
+  border-radius: 2px;
+  animation: loadingWheelScroll 1.5s ease-in-out infinite;
+}
+@keyframes loadingWheelScroll {
+  0%   { transform: translateY(0);    opacity: 1; }
+  70%  { transform: translateY(9px);  opacity: 0; }
+  71%  { transform: translateY(0);    opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Cortinas de saída ── */
+.loading-curtain {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: #1a0d07;
+  z-index: 3;
+  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.loading-curtain--top    { top: 0;   transform: translateY(0); }
+.loading-curtain--bottom { bottom: 0; transform: translateY(0); }
+
+/* ===== REDUCED MOTION para loading ===== */
+@media (prefers-reduced-motion: reduce) {
+  .loading-ring { animation: none; }
+  .loading-logo { animation: none; }
+  .loading-hint-wheel { animation: none; }
+  #loading-screen.hide .loading-curtain--top,
+  #loading-screen.hide .loading-curtain--bottom {
+    transform: none;
+  }
+  #loading-screen.hide {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 }

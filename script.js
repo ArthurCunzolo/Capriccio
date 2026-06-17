@@ -397,3 +397,74 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pequeno delay para garantir que o DOM está pronto
   setTimeout(initHeroTyping, 1500);
 });
+
+
+// ===== LOADING SCREEN =====
+(function initLoadingScreen() {
+  const screen = document.getElementById('loading-screen');
+  const bar    = document.getElementById('loadingBar');
+  const hint   = document.getElementById('loadingHint');
+  if (!screen) return;
+
+  document.body.classList.add('loading-active');
+
+  let progress  = 0;
+  let ready     = false;
+  let dismissed = false;
+
+  // ── Anima barra ──────────────────────────────────────
+  function advanceBar() {
+    const target = ready ? 100 : 82;
+    const speed  = ready ? 2.2 : 0.7;
+    if (progress < target) {
+      progress = Math.min(progress + speed, target);
+      bar.style.width = progress + '%';
+      requestAnimationFrame(advanceBar);
+    }
+    if (progress >= 100 && !dismissed) showHint();
+  }
+  advanceBar();
+
+  window.addEventListener('load', () => {
+    ready = true;
+    const finish = setInterval(() => {
+      progress = Math.min(progress + 2, 100);
+      bar.style.width = progress + '%';
+      if (progress >= 100) { clearInterval(finish); showHint(); }
+    }, 16);
+  });
+
+  function showHint() {
+    hint.classList.add('show');
+  }
+
+  // ── Dismiss: cortinas saem, depois tela desaparece ───
+  function dismiss() {
+    if (dismissed) return;
+    if (progress < 100) return;
+    dismissed = true;
+
+    // 1. cortinas deslizam para fora
+    screen.classList.add('hide');
+
+    // 2. após cortinas (600ms), fade final e remove
+    setTimeout(() => {
+      screen.classList.add('done');
+      document.body.classList.remove('loading-active');
+    }, 620);
+
+    setTimeout(() => screen.remove(), 1100);
+  }
+
+  window.addEventListener('wheel',     () => dismiss(), { passive: true });
+  window.addEventListener('touchmove', () => dismiss(), { passive: true });
+  window.addEventListener('keydown', e => {
+    if (['ArrowDown','PageDown','Space','Enter'].includes(e.code)) dismiss();
+  });
+  screen.addEventListener('click', () => { if (progress >= 100) dismiss(); });
+
+  // Safety net
+  setTimeout(() => { progress = 100; bar.style.width = '100%'; showHint(); }, 3000);
+  setTimeout(() => { if (!dismissed) { ready = true; progress = 100; dismiss(); } }, 7000);
+})();
+

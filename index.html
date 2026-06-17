@@ -13,7 +13,61 @@
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body>
-<!-- ===== HEADER ===== -->
+
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loading-screen" aria-live="polite" role="status">
+  <canvas id="loading-canvas" aria-hidden="true"></canvas>
+
+  <!-- Gradiente ornamental -->
+  <div class="loading-glow loading-glow--tl" aria-hidden="true"></div>
+  <div class="loading-glow loading-glow--br" aria-hidden="true"></div>
+
+  <div class="loading-content">
+
+    <!-- Logo com anéis orbitais -->
+    <div class="loading-logo-wrap">
+      <div class="loading-ring loading-ring--1" aria-hidden="true"></div>
+      <div class="loading-ring loading-ring--2" aria-hidden="true"></div>
+      <div class="loading-ring loading-ring--3" aria-hidden="true"></div>
+      <div class="loading-logo-inner">
+        <img src="images/logo.png" alt="Capriccio" class="loading-logo" id="loadingLogo">
+      </div>
+    </div>
+
+    <!-- Nome da marca -->
+    <div class="loading-brand">
+      <h1 class="loading-brand-name">Capriccio</h1>
+      <p class="loading-tagline">Salgados &amp; Doces Artesanais</p>
+    </div>
+
+    <!-- Ornamento divisor -->
+    <div class="loading-ornament" aria-hidden="true">
+      <span class="loading-ornament-line"></span>
+      <span class="loading-ornament-diamond"></span>
+      <span class="loading-ornament-line"></span>
+    </div>
+
+    <!-- Barra de progresso -->
+    <div class="loading-bar-wrap" aria-hidden="true">
+      <div class="loading-bar" id="loadingBar"></div>
+    </div>
+
+    <!-- Dica de scroll -->
+    <p class="loading-hint" id="loadingHint">
+      <span class="loading-hint-mouse" aria-hidden="true">
+        <span class="loading-hint-wheel"></span>
+      </span>
+      Role para entrar
+    </p>
+
+  </div>
+
+  <!-- Cortinas de saída (animação de reveal) -->
+  <div class="loading-curtain loading-curtain--top"    aria-hidden="true"></div>
+  <div class="loading-curtain loading-curtain--bottom" aria-hidden="true"></div>
+</div>
+
+
 <header class="header" id="header">
   <div class="container">
     <a href="#inicio" class="header-logo">
@@ -40,9 +94,7 @@
   <!-- Canvas Three.js por trás de tudo -->
   <div id="hero-canvas" aria-hidden="true"></div>
 
-  <div class="hero-bg">
-    <img src="images/Capriccio/BoloProdutos.jpg" alt="Mesa de doces e salgados artesanais Capriccio">
-  </div>
+  <div class="hero-bg" role="img" aria-label="Mesa de doces e salgados artesanais Capriccio"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-badge">
