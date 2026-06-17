@@ -1581,3 +1581,201 @@ ul {
     font-size: 2rem;
   }
 }
+
+/* ===== THREE.JS CANVAS CONTAINERS ===== */
+
+/* Hero canvas — entre a imagem de fundo e o overlay */
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* acima da hero-bg (z:0) */
+  pointer-events: none;
+}
+/* Ajusta overlay e content para ficarem acima do canvas */
+.hero-overlay { z-index: 2 !important; }
+.hero-content  { z-index: 3 !important; }
+.hero-scroll-hint { z-index: 3 !important; }
+#hero-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Stats canvas — cobre o fundo da stats-bar */
+#stats-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#stats-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.stats-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Services canvas — atrás do conteúdo */
+#services-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#services-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Contact canvas */
+#contact-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.6;
+}
+#contact-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ===== HERO SCROLL HINT ===== */
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(232, 213, 163, 0.6);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: fadeInUp 1s ease-out 1.5s both;
+}
+
+.scroll-mouse {
+  width: 24px;
+  height: 38px;
+  border: 2px solid rgba(197, 151, 59, 0.45);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.scroll-wheel {
+  width: 4px;
+  height: 8px;
+  background: var(--color-gold);
+  border-radius: 2px;
+  animation: scrollWheel 1.6s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+@keyframes scrollWheel {
+  0%   { transform: translateY(0); opacity: 0.8; }
+  60%  { transform: translateY(12px); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 0.8; }
+}
+
+/* ===== SERVICE CARD — dark mode override para sobre canvas ===== */
+.section-dark .service-card {
+  background: rgba(255, 248, 236, 0.06);
+  border: 1px solid rgba(197, 151, 59, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-cream);
+}
+
+.section-dark .service-card h3 {
+  color: var(--color-gold-pale);
+}
+
+.section-dark .service-card p {
+  color: rgba(232, 213, 163, 0.75);
+}
+
+.section-dark .service-card:hover {
+  background: rgba(255, 248, 236, 0.10);
+  border-color: rgba(197, 151, 59, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== CONTACT SECTION — vidro fosco sobre wave ===== */
+#contato .contact-wrapper {
+  position: relative;
+}
+#contato .contact-info,
+#contato .contact-form {
+  background: rgba(255, 248, 236, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(197, 151, 59, 0.15);
+}
+
+/* ===== CURSOR PERSONALIZADO (desktop) ===== */
+@media (min-width: 1024px) and (hover: hover) {
+  body { cursor: none; }
+  .cursor-dot {
+    position: fixed;
+    top: 0; left: 0;
+    width: 8px; height: 8px;
+    background: var(--color-gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, background 0.2s ease;
+  }
+  .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 32px; height: 32px;
+    border: 1.5px solid rgba(197, 151, 59, 0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+  }
+  body:has(a:hover) .cursor-ring,
+  body:has(button:hover) .cursor-ring {
+    width: 48px;
+    height: 48px;
+    border-color: var(--color-gold);
+  }
+}
+
+/* ===== ANIMAÇÃO DE ENTRADA NAS SEÇÕES (stagger melhorado) ===== */
+.services-grid .service-card:nth-child(1) { transition-delay: 0.05s; }
+.services-grid .service-card:nth-child(2) { transition-delay: 0.12s; }
+.services-grid .service-card:nth-child(3) { transition-delay: 0.19s; }
+.services-grid .service-card:nth-child(4) { transition-delay: 0.26s; }
+.services-grid .service-card:nth-child(5) { transition-delay: 0.33s; }
+.services-grid .service-card:nth-child(6) { transition-delay: 0.40s; }
+
+.team-grid .team-card:nth-child(1) { transition-delay: 0.1s; }
+.team-grid .team-card:nth-child(2) { transition-delay: 0.22s; }
+.team-grid .team-card:nth-child(3) { transition-delay: 0.34s; }
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  #hero-canvas,
+  #stats-canvas,
+  #services-canvas,
+  #contact-canvas { display: none; }
+
+  .scroll-wheel { animation: none; }
+  .hero-scroll-hint { animation: none; opacity: 1; }
+}

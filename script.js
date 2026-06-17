@@ -283,3 +283,117 @@ window.addEventListener('scroll', () => {
     heroBg.style.transform = `scale(1.05) translateY(${scrolled * 0.15}px)`;
   }
 });
+
+// ===== CURSOR PERSONALIZADO =====
+function initCustomCursor() {
+  // Só ativa em desktops com mouse real
+  if (window.innerWidth < 1024 || !window.matchMedia('(hover: hover)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const dot  = document.createElement('div');
+  const ring = document.createElement('div');
+  dot.className  = 'cursor-dot';
+  ring.className = 'cursor-ring';
+  document.body.appendChild(dot);
+  document.body.appendChild(ring);
+
+  let mouseX = 0, mouseY = 0;
+  let ringX  = 0, ringY  = 0;
+
+  window.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top  = mouseY + 'px';
+  });
+
+  // Anel segue com lag suave (lerp)
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top  = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Esconde cursor nativo quando sai da janela
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity  = '0';
+    ring.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', () => {
+    dot.style.opacity  = '1';
+    ring.style.opacity = '1';
+  });
+}
+
+// ===== HOVER TILT NOS CARDS (efeito 3D CSS) =====
+function initCardTilt() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const cards = document.querySelectorAll('.service-card, .team-card, .gallery-item');
+
+  cards.forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect   = card.getBoundingClientRect();
+      const cx     = rect.left + rect.width  / 2;
+      const cy     = rect.top  + rect.height / 2;
+      const dx     = (e.clientX - cx) / (rect.width  / 2);
+      const dy     = (e.clientY - cy) / (rect.height / 2);
+      const tiltX  = dy * -6;   // graus
+      const tiltY  = dx *  6;
+
+      card.style.transform    = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-6px)`;
+      card.style.transition   = 'transform 0.1s ease';
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform  = '';
+      card.style.transition = 'transform 0.4s ease';
+    });
+  });
+}
+
+// ===== TYPING EFEITO NO HERO (sutil) =====
+function initHeroTyping() {
+  const highlight = document.querySelector('.hero-title .highlight');
+  if (!highlight) return;
+
+  const words = ['Artesanais', 'Irresistíveis', 'com Tradição', 'com Carinho'];
+  let idx = 0;
+  let charIdx = 0;
+  let deleting = false;
+  let pause = false;
+
+  function type() {
+    if (pause) return;
+    const word = words[idx];
+
+    if (!deleting) {
+      highlight.textContent = word.slice(0, charIdx + 1);
+      charIdx++;
+      if (charIdx === word.length) {
+        pause = true;
+        setTimeout(() => { pause = false; deleting = true; }, 2200);
+      }
+    } else {
+      highlight.textContent = word.slice(0, charIdx - 1);
+      charIdx--;
+      if (charIdx === 0) {
+        deleting = false;
+        idx = (idx + 1) % words.length;
+      }
+    }
+  }
+
+  setInterval(type, deleting ? 60 : 90);
+}
+
+// Init all enhancements
+document.addEventListener('DOMContentLoaded', () => {
+  initCustomCursor();
+  initCardTilt();
+  // Pequeno delay para garantir que o DOM está pronto
+  setTimeout(initHeroTyping, 1500);
+});
