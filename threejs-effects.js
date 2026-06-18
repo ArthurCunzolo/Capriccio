@@ -1,579 +1,515 @@
-// ===== CAPRICCIO - Three.js 3D Effects =====
-// Efeitos 3D elegantes para o site Capriccio
-// Paleta: marrom escuro (#2C1810) + dourado (#C5973B) + creme (#FFF8EC)
+// ============================================================
+// CAPRICCIO — Three.js Global Interactive Scene
+// Canvas fixo, reativo ao scroll + mouse, com bloom e shaders
+// Inspirado na estética imersiva de sites como igloo.inc
+// ============================================================
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
+import { EffectComposer }  from 'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass }      from 'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass }      from 'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/postprocessing/ShaderPass.js';
 
-// ─────────────────────────────────────────────
-// 1. HERO CANVAS — Partículas douradas flutuantes
-// ─────────────────────────────────────────────
-class HeroParticles {
+// ─── Cores da paleta Capriccio ───────────────────────────────
+const GOLD       = new THREE.Color(0xC5973B);
+const GOLD_PALE  = new THREE.Color(0xE8D5A3);
+const BROWN_DARK = new THREE.Color(0x1a0d07);
+const CREAM      = new THREE.Color(0xFFF8EC);
+
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  // Sem animações — só um canvas transparente
+  const cvs = document.createElement('canvas');
+  cvs.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
+  document.body.prepend(cvs);
+  return;
+}
+
+// ─── Seções e suas "cenas" mapeadas ──────────────────────────
+// Cada seção define cor de fundo, intensidade do bloom, posição
+// da câmera e comportamento das partículas
+const SECTION_MAP = [
+  { id: 'inicio',   camZ: 6,   bloomStr: 0.9,  particleColor: GOLD,      bgAlpha: 0.0 },
+  { id: 'sobre',    camZ: 7,   bloomStr: 0.5,  particleColor: GOLD_PALE, bgAlpha: 0.6 },
+  { id: 'servicos', camZ: 5,   bloomStr: 1.4,  particleColor: GOLD,      bgAlpha: 0.0 },
+  { id: 'galeria',  camZ: 8,   bloomStr: 0.4,  particleColor: CREAM,     bgAlpha: 0.7 },
+  { id: 'equipe',   camZ: 7.5, bloomStr: 0.3,  particleColor: GOLD_PALE, bgAlpha: 0.7 },
+  { id: 'contato',  camZ: 5.5, bloomStr: 1.1,  particleColor: GOLD,      bgAlpha: 0.0 },
+];
+
+// ============================================================
+class CapriccioScene {
   constructor() {
-    this.container = document.getElementById('hero-canvas');
-    if (!this.container) return;
-
-    this.isMobile = window.innerWidth < 768;
-    this.mouse = new THREE.Vector2(0, 0);
+    this.isMobile  = window.innerWidth < 768;
+    this.mouse     = new THREE.Vector2(0, 0);
     this.smoothMouse = new THREE.Vector2(0, 0);
-    this.clock = new THREE.Clock();
+    this.raycaster = new THREE.Raycaster();
+    this.clock     = new THREE.Clock();
+    this.scrollY   = 0;
+    this.targetScrollY = 0;
+    this.currentSection = 0;
+    this.targetSection  = 0;
+    this.sectionProgress = 0; // 0→1 lerp between sections
 
-    this.initRenderer();
-    this.initScene();
-    this.initCamera();
-    this.createParticles();
-    this.createOrnamentalRings();
-    this.initEvents();
+    // Estado animado (lerp-able)
+    this.state = {
+      camZ:      6,
+      bloomStr:  0.9,
+      colorR:    GOLD.r,
+      colorG:    GOLD.g,
+      colorB:    GOLD.b,
+    };
+
+    this.init();
+  }
+
+  // ─── Setup ─────────────────────────────────────────────────
+  init() {
+    this.createCanvas();
+    this.createRenderer();
+    this.createScene();
+    this.createCamera();
+    this.createLights();
+    this.createParticleField();
+    this.createNoiseSphere();
+    this.createFloatingRings();
+    this.createPostProcessing();
+    this.bindEvents();
+    this.detectSections();
     this.animate();
   }
 
-  initRenderer() {
+  createCanvas() {
+    this.canvas = document.createElement('canvas');
+    this.canvas.style.cssText = `
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    `;
+    document.body.prepend(this.canvas);
+  }
+
+  createRenderer() {
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      canvas: this.canvas,
+      antialias: !this.isMobile,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.container.appendChild(this.renderer.domElement);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.setClearColor(0x000000, 0); // transparent
   }
 
-  initScene() {
+  createScene() {
     this.scene = new THREE.Scene();
-    // Nevoeiro suave para profundidade
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.025);
   }
 
-  initCamera() {
+  createCamera() {
     this.camera = new THREE.PerspectiveCamera(
-      70,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      200
+      60, window.innerWidth / window.innerHeight, 0.1, 200
     );
-    this.camera.position.set(0, 0, 8);
+    this.camera.position.set(0, 0, 6);
   }
 
-  createParticles() {
-    const count = this.isMobile ? 600 : 1800;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-    const speeds = new Float32Array(count);
-    const phases = new Float32Array(count);
+  createLights() {
+    this.ambientLight = new THREE.AmbientLight(0xC5973B, 0.4);
+    this.scene.add(this.ambientLight);
 
-    const gold = new THREE.Color(0xC5973B);
-    const goldPale = new THREE.Color(0xE8D5A3);
-    const cream = new THREE.Color(0xFFF8EC);
+    this.pointLight = new THREE.PointLight(0xE8D5A3, 3, 30);
+    this.pointLight.position.set(3, 3, 4);
+    this.scene.add(this.pointLight);
+
+    this.rimLight = new THREE.PointLight(0xC5973B, 2, 25);
+    this.rimLight.position.set(-4, -2, 2);
+    this.scene.add(this.rimLight);
+  }
+
+  // ─── Partículas ────────────────────────────────────────────
+  createParticleField() {
+    const count = this.isMobile ? 800 : 2500;
+    const pos   = new Float32Array(count * 3);
+    const col   = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const phase = new Float32Array(count);
+    const speed = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      // Distribuição em esfera achatada
-      const r = 3 + Math.random() * 14;
+      // Distribuição esférica + um pouco achatada
+      const r     = 3 + Math.random() * 18;
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+      const phi   = Math.acos(2 * Math.random() - 1);
 
-      positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.6;
-      positions[i * 3 + 2] = r * Math.cos(phi) - 4;
+      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta) * 0.55;
+      pos[i*3+2] = r * Math.cos(phi) - 3;
 
-      // Cor: gradiente dourado → creme
       const t = Math.random();
-      const col = t < 0.5
-        ? gold.clone().lerp(goldPale, t * 2)
-        : goldPale.clone().lerp(cream, (t - 0.5) * 2);
+      const c = GOLD.clone().lerp(GOLD_PALE, t);
+      col[i*3]   = c.r;
+      col[i*3+1] = c.g;
+      col[i*3+2] = c.b;
 
-      colors[i * 3]     = col.r;
-      colors[i * 3 + 1] = col.g;
-      colors[i * 3 + 2] = col.b;
-
-      sizes[i]  = Math.random() * 1.8 + 0.4;
-      speeds[i] = Math.random() * 0.4 + 0.1;
-      phases[i] = Math.random() * Math.PI * 2;
+      sizes[i] = Math.random() * 2.4 + 0.3;
+      phase[i] = Math.random() * Math.PI * 2;
+      speed[i] = Math.random() * 0.5 + 0.1;
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
-    geo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
+    this._pCount   = count;
+    this._pBasePos = pos.slice();
+    this._pPhase   = phase;
+    this._pSpeed   = speed;
 
-    this._particleBasePos = positions.slice();
-    this._particleSpeeds  = speeds;
-    this._particlePhases  = phases;
-    this._particleCount   = count;
-    this._particleGeo     = geo;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
+    this._pGeo = geo;
+    this._pCol = col;
 
     const mat = new THREE.PointsMaterial({
-      size: 0.06,
+      size: 0.055,
       sizeAttenuation: true,
       vertexColors: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.6,
       blending: THREE.AdditiveBlending,
-      depthWrite: false
+      depthWrite: false,
     });
 
     this.particles = new THREE.Points(geo, mat);
     this.scene.add(this.particles);
   }
 
-  createOrnamentalRings() {
-    // Dois anéis decorativos girando lentamente — remetem a ornamentos de confeitaria
+  // ─── Esfera com shader de noise ────────────────────────────
+  createNoiseSphere() {
+    const geo = new THREE.IcosahedronGeometry(1.6, this.isMobile ? 24 : 64);
+
+    this.sphereMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime:    { value: 0 },
+        uMouse:   { value: new THREE.Vector2(0, 0) },
+        uColor1:  { value: GOLD.clone() },
+        uColor2:  { value: GOLD_PALE.clone() },
+        uNoise:   { value: 0.28 },
+        uAlpha:   { value: 0.55 },
+      },
+      vertexShader: `
+        uniform float uTime;
+        uniform vec2  uMouse;
+        uniform float uNoise;
+        varying vec2  vUv;
+        varying vec3  vNormal;
+        varying vec3  vPos;
+
+        // 3D Simplex-like noise (compact)
+        vec3 mod289v3(vec3 x){return x-floor(x*(1./289.))*289.;}
+        vec4 mod289v4(vec4 x){return x-floor(x*(1./289.))*289.;}
+        vec4 permute4(vec4 x){return mod289v4(((x*34.)+1.)*x);}
+        vec4 taylorInvSqrt4(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+        float snoise3(vec3 v){
+          const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);
+          vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
+          vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;
+          vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);
+          vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
+          i=mod289v3(i);
+          vec4 p=permute4(permute4(permute4(i.z+vec4(0.,i1.z,i2.z,1.))
+            +i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));
+          float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;
+          vec4 j=p-49.*floor(p*ns.z*ns.z);
+          vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);
+          vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;
+          vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);
+          vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;
+          vec4 sh=-step(h,vec4(0.));
+          vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+          vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);
+          vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);
+          vec4 norm=taylorInvSqrt4(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+          p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+          vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
+          m=m*m;return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+        }
+
+        void main(){
+          vUv     = uv;
+          vNormal = normalize(normalMatrix * normal);
+          float n = snoise3(position * 1.2 + uTime * 0.18);
+          float n2= snoise3(position * 2.4 - uTime * 0.12 + 10.0);
+          float d = uNoise * (n * 0.65 + n2 * 0.35);
+          // Mouse influence: tilt a onda perto do cursor
+          float mx = uMouse.x * 0.18;
+          float my = uMouse.y * 0.18;
+          vec3 displaced = position + normal * d + vec3(mx, my, 0.0) * 0.5;
+          vPos = displaced;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        uniform vec3  uColor1;
+        uniform vec3  uColor2;
+        uniform float uAlpha;
+        varying vec2  vUv;
+        varying vec3  vNormal;
+        varying vec3  vPos;
+
+        void main(){
+          // Fresnel glow
+          vec3 viewDir = normalize(cameraPosition - vPos);
+          float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.8);
+
+          // Gradiente temporal
+          float t = sin(uTime * 0.4 + vUv.y * 3.14) * 0.5 + 0.5;
+          vec3  color = mix(uColor1, uColor2, t);
+
+          // Brilho nas bordas
+          color += fresnel * uColor2 * 0.7;
+
+          // Alpha: borda brilhante, centro mais transparente
+          float alpha = uAlpha * (0.35 + fresnel * 0.65);
+
+          gl_FragColor = vec4(color, alpha);
+        }
+      `,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    this.sphere = new THREE.Mesh(geo, this.sphereMat);
+    this.sphere.position.set(0, 0, -1);
+    this.scene.add(this.sphere);
+  }
+
+  // ─── Anéis ornamentais ──────────────────────────────────────
+  createFloatingRings() {
     this.rings = [];
-
-    const ringData = [
-      { r: 3.5, tube: 0.008, segs: 128, color: 0xC5973B, opacity: 0.25, speed: 0.08, tilt: 0.4 },
-      { r: 5.2, tube: 0.005, segs: 128, color: 0xE8D5A3, opacity: 0.15, speed: -0.05, tilt: -0.6 },
+    const configs = [
+      { r: 2.5, tube: 0.007, segs: 160, speed:  0.10, tiltX: 0.5,  tiltZ: 0.2  },
+      { r: 3.4, tube: 0.005, segs: 160, speed: -0.07, tiltX: -0.3, tiltZ: 0.8  },
+      { r: 4.4, tube: 0.004, segs: 200, speed:  0.05, tiltX: 1.1,  tiltZ: -0.4 },
     ];
-
-    ringData.forEach(d => {
-      const geo = new THREE.TorusGeometry(d.r, d.tube, 4, d.segs);
+    configs.forEach(cfg => {
+      const geo = new THREE.TorusGeometry(cfg.r, cfg.tube, 4, cfg.segs);
       const mat = new THREE.MeshBasicMaterial({
-        color: d.color,
+        color: 0xC5973B,
         transparent: true,
-        opacity: d.opacity,
+        opacity: 0.22,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
+        depthWrite: false,
       });
       const ring = new THREE.Mesh(geo, mat);
-      ring.rotation.x = d.tilt;
-      ring.userData.speed = d.speed;
+      ring.rotation.x = cfg.tiltX;
+      ring.rotation.z = cfg.tiltZ;
+      ring.userData.speed = cfg.speed;
+      ring.userData.baseTiltX = cfg.tiltX;
       this.scene.add(ring);
       this.rings.push(ring);
     });
   }
 
-  initEvents() {
+  // ─── Post-processing: Bloom + Vignette ──────────────────────
+  createPostProcessing() {
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+    this.bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.9,   // strength
+      0.55,  // radius
+      0.20   // threshold
+    );
+    this.composer.addPass(this.bloomPass);
+
+    // Vignette GLSL pass
+    const vignetteShader = {
+      uniforms: {
+        tDiffuse:  { value: null },
+        uOffset:   { value: 0.85 },
+        uDarkness: { value: 1.3 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float uOffset;
+        uniform float uDarkness;
+        varying vec2 vUv;
+        void main(){
+          vec4 color = texture2D(tDiffuse, vUv);
+          vec2 uv = (vUv - vec2(0.5)) * vec2(uOffset);
+          gl_FragColor = vec4(mix(color.rgb, vec3(0.0), dot(uv,uv) * uDarkness), color.a);
+        }
+      `,
+    };
+    const vigPass = new ShaderPass(vignetteShader);
+    this.composer.addPass(vigPass);
+  }
+
+  // ─── Detecta seções e observa scroll ───────────────────────
+  detectSections() {
+    this._sectionEls = SECTION_MAP.map(s => document.getElementById(s.id)).filter(Boolean);
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = this._sectionEls.indexOf(entry.target);
+          if (idx !== -1) this.targetSection = idx;
+        }
+      });
+    }, { threshold: 0.35 });
+
+    this._sectionEls.forEach(el => obs.observe(el));
+  }
+
+  // ─── Eventos ───────────────────────────────────────────────
+  bindEvents() {
     window.addEventListener('mousemove', e => {
-      this.mouse.x = (e.clientX / window.innerWidth)  * 2 - 1;
+      this.mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
 
+    // Touch paralaxe
+    window.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      this.mouse.x =  (t.clientX / window.innerWidth)  * 2 - 1;
+      this.mouse.y = -(t.clientY / window.innerHeight) * 2 + 1;
+    }, { passive: true });
+
     window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
+      const w = window.innerWidth, h = window.innerHeight;
+      this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(w, h);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.composer.setSize(w, h);
+      this.bloomPass.resolution.set(w, h);
     });
   }
 
+  // ─── Lerp state entre seções ───────────────────────────────
+  lerpToSection(delta) {
+    const speed = 1.8 * delta;
+    const target = SECTION_MAP[Math.min(this.targetSection, SECTION_MAP.length - 1)];
+
+    this.state.camZ     += (target.camZ    - this.state.camZ)     * speed;
+    this.state.bloomStr += (target.bloomStr - this.state.bloomStr) * speed;
+    this.state.colorR   += (target.particleColor.r - this.state.colorR) * speed * 0.6;
+    this.state.colorG   += (target.particleColor.g - this.state.colorG) * speed * 0.6;
+    this.state.colorB   += (target.particleColor.b - this.state.colorB) * speed * 0.6;
+  }
+
+  // ─── Loop de animação ──────────────────────────────────────
   animate() {
     requestAnimationFrame(() => this.animate());
+    const delta   = this.clock.getDelta();
     const elapsed = this.clock.getElapsedTime();
 
-    // Suaviza movimento do mouse
-    this.smoothMouse.lerp(this.mouse, 0.03);
+    // Mouse suave
+    this.smoothMouse.lerp(this.mouse, 0.045);
 
-    // Paralaxe da câmera
-    this.camera.position.x += (this.smoothMouse.x * 1.5 - this.camera.position.x) * 0.04;
-    this.camera.position.y += (this.smoothMouse.y * 0.8 - this.camera.position.y) * 0.04;
-    this.camera.lookAt(this.scene.position);
+    // Transição de seção
+    this.lerpToSection(delta);
 
-    // Anima partículas — flutuação suave
+    // Câmera: paralaxe + transição de Z
+    this.camera.position.x += (this.smoothMouse.x * 1.8 - this.camera.position.x) * 0.05;
+    this.camera.position.y += (this.smoothMouse.y * 1.0 - this.camera.position.y) * 0.05;
+    this.camera.position.z += (this.state.camZ - this.camera.position.z) * 0.04;
+    this.camera.lookAt(0, 0, 0);
+
+    // Bloom dinâmico
+    this.bloomPass.strength = this.state.bloomStr;
+
+    // Cores das partículas
+    const pCol = this._pGeo.attributes.color;
+    const N    = this._pCount;
+    const r = this.state.colorR, g = this.state.colorG, b = this.state.colorB;
+    for (let i = 0; i < N; i++) {
+      pCol.setXYZ(i, r * (0.7 + Math.random() * 0.3), g * (0.7 + Math.random() * 0.3), b * (0.7 + Math.random() * 0.3));
+    }
+    pCol.needsUpdate = true;
+
+    // Posição flutuante das partículas
     if (!this.isMobile) {
-      const pos = this._particleGeo.attributes.position;
-      const base = this._particleBasePos;
-      const N = this._particleCount;
-
+      const pos  = this._pGeo.attributes.position;
+      const base = this._pBasePos;
       for (let i = 0; i < N; i++) {
-        const bx = base[i * 3];
-        const by = base[i * 3 + 1];
-        const bz = base[i * 3 + 2];
-        const ph = this._particlePhases[i];
-        const sp = this._particleSpeeds[i];
-
+        const ph = this._pPhase[i];
+        const sp = this._pSpeed[i];
         pos.setXYZ(
           i,
-          bx + Math.sin(elapsed * sp + ph) * 0.12,
-          by + Math.cos(elapsed * sp * 0.7 + ph) * 0.15,
-          bz + Math.sin(elapsed * sp * 0.5 + ph * 1.3) * 0.08
+          base[i*3]   + Math.sin(elapsed * sp + ph) * 0.14,
+          base[i*3+1] + Math.cos(elapsed * sp * 0.7 + ph) * 0.18,
+          base[i*3+2] + Math.sin(elapsed * sp * 0.5 + ph * 1.3) * 0.09
         );
       }
       pos.needsUpdate = true;
     }
 
-    // Rotação suave das partículas
-    this.particles.rotation.y = elapsed * 0.018;
-    this.particles.rotation.x = Math.sin(elapsed * 0.04) * 0.06;
+    // Rotação das partículas
+    this.particles.rotation.y  = elapsed * 0.016;
+    this.particles.rotation.x += Math.sin(elapsed * 0.03) * 0.0002;
 
-    // Anéis ornamentais
-    this.rings.forEach(ring => {
-      ring.rotation.y += ring.userData.speed * 0.005;
-      ring.rotation.z += ring.userData.speed * 0.003;
+    // Esfera com shader noise
+    this.sphereMat.uniforms.uTime.value  = elapsed;
+    this.sphereMat.uniforms.uMouse.value.set(this.smoothMouse.x, this.smoothMouse.y);
+    this.sphereMat.uniforms.uColor1.value.setRGB(r, g, b);
+
+    // Rotação suave da esfera em resposta ao mouse
+    this.sphere.rotation.y += (this.smoothMouse.x * 0.4 - this.sphere.rotation.y) * 0.02;
+    this.sphere.rotation.x += (-this.smoothMouse.y * 0.25 - this.sphere.rotation.x) * 0.02;
+    this.sphere.rotation.z  = elapsed * 0.04;
+
+    // Pulso de escala da esfera
+    const pulse = 1 + Math.sin(elapsed * 0.9) * 0.04;
+    this.sphere.scale.setScalar(pulse);
+
+    // Luz ponto orbita ao redor do centro
+    this.pointLight.position.x = Math.cos(elapsed * 0.4) * 5;
+    this.pointLight.position.y = Math.sin(elapsed * 0.3) * 3;
+    this.rimLight.position.x   = Math.cos(elapsed * 0.3 + Math.PI) * 4;
+    this.rimLight.position.y   = Math.sin(elapsed * 0.5 + Math.PI) * 3;
+
+    // Anéis: rotação + tilt com mouse
+    this.rings.forEach((ring, i) => {
+      ring.rotation.y += ring.userData.speed * 0.007;
+      ring.rotation.z += ring.userData.speed * 0.004;
+      ring.rotation.x = ring.userData.baseTiltX + this.smoothMouse.y * 0.12;
     });
 
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   }
 }
 
-// ─────────────────────────────────────────────
-// 2. STATS SECTION — Partículas douradas reativas
-// ─────────────────────────────────────────────
-class StatsParticles {
-  constructor() {
-    this.container = document.getElementById('stats-canvas');
-    if (!this.container) return;
-
-    this.clock = new THREE.Clock();
-    this.mouse = new THREE.Vector2(0, 0);
-
-    this.initRenderer();
-    this.initScene();
-    this.initCamera();
-    this.createParticles();
-    this.initEvents();
-    this.animate();
-  }
-
-  initRenderer() {
-    const w = this.container.offsetWidth;
-    const h = this.container.offsetHeight || 200;
-
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.container.appendChild(this.renderer.domElement);
-    this._w = w;
-    this._h = h;
-  }
-
-  initScene() {
-    this.scene = new THREE.Scene();
-  }
-
-  initCamera() {
-    this._w = this.container.offsetWidth;
-    this._h = this.container.offsetHeight || 200;
-    this.camera = new THREE.PerspectiveCamera(60, this._w / this._h, 0.1, 100);
-    this.camera.position.z = 5;
-  }
-
-  createParticles() {
-    const count = 400;
-    const positions = new Float32Array(count * 3);
-    const basePos   = new Float32Array(count * 3);
-    const colors    = new Float32Array(count * 3);
-
-    const gold = new THREE.Color(0xC5973B);
-
-    for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * 18;
-      const y = (Math.random() - 0.5) * 4;
-      const z = (Math.random() - 0.5) * 4;
-
-      positions[i*3]=basePos[i*3]=x;
-      positions[i*3+1]=basePos[i*3+1]=y;
-      positions[i*3+2]=basePos[i*3+2]=z;
-
-      const t = Math.random();
-      colors[i*3]   = gold.r * (0.7 + t * 0.3);
-      colors[i*3+1] = gold.g * (0.7 + t * 0.3);
-      colors[i*3+2] = gold.b * (0.7 + t * 0.3);
-    }
-
-    this._base = basePos;
-    this._count = count;
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
-    this._geo = geo;
-
-    const mat = new THREE.PointsMaterial({
-      size: 0.07,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.5,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
+// ─── Inicializa após DOM pronto ───────────────────────────────
+function boot() {
+  // Espera loading sair antes de iniciar Three.js
+  const loadScreen = document.getElementById('loading-screen');
+  if (loadScreen) {
+    const observer = new MutationObserver(() => {
+      if (loadScreen.classList.contains('done') || !loadScreen.parentNode) {
+        observer.disconnect();
+        new CapriccioScene();
+      }
     });
-
-    this.points = new THREE.Points(geo, mat);
-    this.scene.add(this.points);
-  }
-
-  initEvents() {
-    this.container.addEventListener('mousemove', e => {
-      const rect = this.container.getBoundingClientRect();
-      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    });
-
-    window.addEventListener('resize', () => {
-      const w = this.container.offsetWidth;
-      const h = this.container.offsetHeight || 200;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
-    });
-  }
-
-  animate() {
-    requestAnimationFrame(() => this.animate());
-    const elapsed = this.clock.getElapsedTime();
-
-    const pos = this._geo.attributes.position;
-    const base = this._base;
-
-    for (let i = 0; i < this._count; i++) {
-      const bx = base[i*3];
-      const by = base[i*3+1];
-
-      // Repulsão suave do mouse
-      const mx = this.mouse.x * 9;
-      const my = this.mouse.y * 2;
-      const dx = mx - bx;
-      const dy = my - by;
-      const dist = Math.sqrt(dx*dx + dy*dy) + 0.01;
-      const repulse = Math.max(0, 2 - dist) * 0.2;
-
-      pos.setX(i, bx - (dx / dist) * repulse + Math.sin(elapsed + i * 0.5) * 0.05);
-      pos.setY(i, by - (dy / dist) * repulse + Math.cos(elapsed * 0.7 + i) * 0.04);
-    }
-    pos.needsUpdate = true;
-
-    this.points.rotation.y = elapsed * 0.01;
-
-    this.renderer.render(this.scene, this.camera);
+    observer.observe(loadScreen, { attributes: true, childList: true });
+    // Safety net
+    setTimeout(() => new CapriccioScene(), 4000);
+  } else {
+    new CapriccioScene();
   }
 }
 
-// ─────────────────────────────────────────────
-// 3. SERVICES SECTION — Geometrias flutuantes
-// ─────────────────────────────────────────────
-class ServicesBackground {
-  constructor() {
-    this.container = document.getElementById('services-canvas');
-    if (!this.container) return;
-
-    this.clock = new THREE.Clock();
-    this.mouse = new THREE.Vector2(0, 0);
-    this.smoothMouse = new THREE.Vector2(0, 0);
-
-    this.initRenderer();
-    this.initScene();
-    this.initCamera();
-    this.createShapes();
-    this.initEvents();
-    this.animate();
-  }
-
-  initRenderer() {
-    const w = this.container.offsetWidth;
-    const h = this.container.offsetHeight || 600;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.container.appendChild(this.renderer.domElement);
-  }
-
-  initScene() {
-    this.scene = new THREE.Scene();
-  }
-
-  initCamera() {
-    const w = this.container.offsetWidth;
-    const h = this.container.offsetHeight || 600;
-    this.camera = new THREE.PerspectiveCamera(65, w / h, 0.1, 100);
-    this.camera.position.z = 7;
-  }
-
-  createShapes() {
-    this.shapes = [];
-
-    const geos = [
-      new THREE.OctahedronGeometry(0.3),
-      new THREE.IcosahedronGeometry(0.25),
-      new THREE.TetrahedronGeometry(0.28),
-      new THREE.TorusGeometry(0.22, 0.05, 8, 24),
-      new THREE.TorusKnotGeometry(0.18, 0.05, 64, 8),
-    ];
-
-    // Luz ambiente dourada
-    const ambLight = new THREE.AmbientLight(0xC5973B, 0.5);
-    this.scene.add(ambLight);
-    const ptLight = new THREE.PointLight(0xE8D5A3, 2, 20);
-    ptLight.position.set(3, 3, 4);
-    this.scene.add(ptLight);
-
-    for (let i = 0; i < 18; i++) {
-      const geo = geos[Math.floor(Math.random() * geos.length)];
-      const t = Math.random();
-      const color = new THREE.Color().setHSL(0.1 + t * 0.04, 0.7, 0.45 + t * 0.3);
-
-      const mat = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.2,
-        metalness: 0.85,
-        transparent: true,
-        opacity: 0.35 + Math.random() * 0.3,
-        wireframe: Math.random() < 0.35
-      });
-
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(
-        (Math.random() - 0.5) * 18,
-        (Math.random() - 0.5) * 10,
-        (Math.random() - 0.5) * 6 - 2
-      );
-      mesh.rotation.set(
-        Math.random() * Math.PI,
-        Math.random() * Math.PI,
-        0
-      );
-      mesh.userData = {
-        floatSpeed:  0.3 + Math.random() * 0.5,
-        rotSpeedX:   (Math.random() - 0.5) * 0.6,
-        rotSpeedY:   (Math.random() - 0.5) * 0.8,
-        floatPhase:  Math.random() * Math.PI * 2,
-        baseY:       mesh.position.y,
-        depth:       0.2 + Math.random() * 0.8
-      };
-
-      this.scene.add(mesh);
-      this.shapes.push(mesh);
-    }
-  }
-
-  initEvents() {
-    window.addEventListener('mousemove', e => {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    });
-
-    window.addEventListener('resize', () => {
-      const w = this.container.offsetWidth;
-      const h = this.container.offsetHeight || 600;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
-    });
-  }
-
-  animate() {
-    requestAnimationFrame(() => this.animate());
-    const elapsed = this.clock.getElapsedTime();
-
-    this.smoothMouse.lerp(this.mouse, 0.04);
-
-    this.shapes.forEach(shape => {
-      const d = shape.userData;
-      shape.position.y = d.baseY + Math.sin(elapsed * d.floatSpeed + d.floatPhase) * 0.4;
-      shape.rotation.x += 0.005 * d.rotSpeedX;
-      shape.rotation.y += 0.005 * d.rotSpeedY;
-      // Paralaxe por profundidade
-      shape.position.x += (this.smoothMouse.x * d.depth * 0.5 - shape.position.x * 0.001) * 0.015;
-    });
-
-    this.renderer.render(this.scene, this.camera);
-  }
-}
-
-// ─────────────────────────────────────────────
-// 4. CONTACT SECTION — Onda suave
-// ─────────────────────────────────────────────
-class ContactWave {
-  constructor() {
-    this.container = document.getElementById('contact-canvas');
-    if (!this.container) return;
-
-    this.clock = new THREE.Clock();
-    this.initRenderer();
-    this.initScene();
-    this.initCamera();
-    this.createWave();
-    this.initEvents();
-    this.animate();
-  }
-
-  initRenderer() {
-    const w = this.container.offsetWidth;
-    const h = this.container.offsetHeight || 500;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.container.appendChild(this.renderer.domElement);
-  }
-
-  initScene() {
-    this.scene = new THREE.Scene();
-  }
-
-  initCamera() {
-    const w = this.container.offsetWidth;
-    const h = this.container.offsetHeight || 500;
-    this.camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 100);
-    this.camera.position.set(0, 3, 8);
-    this.camera.lookAt(0, 0, 0);
-  }
-
-  createWave() {
-    const segs = 60;
-    const geo = new THREE.PlaneGeometry(22, 10, segs, segs);
-    this._origPos = geo.attributes.position.array.slice();
-
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0xC5973B,
-      roughness: 0.6,
-      metalness: 0.3,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.18
-    });
-
-    this.wave = new THREE.Mesh(geo, mat);
-    this.wave.rotation.x = -Math.PI / 3.5;
-    this._geo = geo;
-
-    const ambLight = new THREE.AmbientLight(0xC5973B, 1);
-    this.scene.add(ambLight);
-    this.scene.add(this.wave);
-  }
-
-  initEvents() {
-    window.addEventListener('resize', () => {
-      const w = this.container.offsetWidth;
-      const h = this.container.offsetHeight || 500;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
-    });
-  }
-
-  animate() {
-    requestAnimationFrame(() => this.animate());
-    const elapsed = this.clock.getElapsedTime();
-    const pos = this._geo.attributes.position;
-    const orig = this._origPos;
-
-    for (let i = 0; i < pos.count; i++) {
-      const x = orig[i * 3];
-      const z = orig[i * 3 + 1];
-      const wave = Math.sin(x * 0.5 + elapsed * 0.8) * 0.35
-                 + Math.cos(z * 0.4 + elapsed * 0.6) * 0.25;
-      pos.setZ(i, wave);
-    }
-    pos.needsUpdate = true;
-    this._geo.computeVertexNormals();
-
-    this.renderer.render(this.scene, this.camera);
-  }
-}
-
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
-function initThreeJS() {
-  // Reduzido Motion: respeita preferências de acessibilidade
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  new HeroParticles();
-  new StatsParticles();
-  new ServicesBackground();
-  new ContactWave();
-}
-
-// Aguarda carregamento completo da página
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initThreeJS);
+  document.addEventListener('DOMContentLoaded', boot);
 } else {
-  initThreeJS();
+  boot();
 }
