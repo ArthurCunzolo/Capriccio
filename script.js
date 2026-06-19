@@ -284,48 +284,88 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// ===== CURSOR PERSONALIZADO =====
+// ===== CURSOR PERSONALIZADO — brigadeiro dourado =====
 function initCustomCursor() {
-  // Só ativa em desktops com mouse real
   if (window.innerWidth < 1024 || !window.matchMedia('(hover: hover)').matches) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const dot  = document.createElement('div');
-  const ring = document.createElement('div');
-  dot.className  = 'cursor-dot';
-  ring.className = 'cursor-ring';
-  document.body.appendChild(dot);
-  document.body.appendChild(ring);
+  // SVG de um brigadeiro visto de cima (bolinha com laço e granulado)
+  const brigadeiro = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
+      <!-- Sombra -->
+      <ellipse cx="20" cy="30" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
+      <!-- Corpo do brigadeiro -->
+      <circle cx="19" cy="19" r="12" fill="url(#bg)"/>
+      <!-- Granulado (bolinhas de chocolate) -->
+      <circle cx="14" cy="15" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="19" cy="12" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="24" cy="15" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="25" cy="21" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="21" cy="25" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="15" cy="23" r="1.2" fill="#5C2E00" opacity="0.7"/>
+      <circle cx="12" cy="19" r="1.1" fill="#5C2E00" opacity="0.6"/>
+      <circle cx="22" cy="18" r="1.0" fill="#5C2E00" opacity="0.5"/>
+      <circle cx="17" cy="19" r="1.0" fill="#5C2E00" opacity="0.5"/>
+      <!-- Brilho -->
+      <ellipse cx="15" cy="14" rx="3.5" ry="2" fill="rgba(255,248,200,0.35)" transform="rotate(-20 15 14)"/>
+      <!-- Palito -->
+      <rect x="18.2" y="4" width="2" height="10" rx="1" fill="#C5973B"/>
+      <rect x="17.5" y="3" width="3.5" height="2" rx="1" fill="#E8D5A3"/>
+      <!-- Defs -->
+      <defs>
+        <radialGradient id="bg" cx="40%" cy="35%" r="65%">
+          <stop offset="0%"   stop-color="#C5973B"/>
+          <stop offset="55%"  stop-color="#8B5E1A"/>
+          <stop offset="100%" stop-color="#5C3310"/>
+        </radialGradient>
+      </defs>
+    </svg>
+  `;
+
+  const cursor = document.createElement('div');
+  cursor.className = 'cursor-candy';
+  cursor.innerHTML = brigadeiro;
+  document.body.appendChild(cursor);
 
   let mouseX = 0, mouseY = 0;
-  let ringX  = 0, ringY  = 0;
+  let curX = 0, curY = 0;
+  let isHover = false;
 
   window.addEventListener('mousemove', e => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    dot.style.left = mouseX + 'px';
-    dot.style.top  = mouseY + 'px';
   });
 
-  // Anel segue com lag suave (lerp)
-  function animateRing() {
-    ringX += (mouseX - ringX) * 0.12;
-    ringY += (mouseY - ringY) * 0.12;
-    ring.style.left = ringX + 'px';
-    ring.style.top  = ringY + 'px';
-    requestAnimationFrame(animateRing);
+  // Hover em links e botões: gira o brigadeiro
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest('a, button, .service-card, .gallery-item, .team-card')) {
+      isHover = true;
+      cursor.classList.add('cursor-candy--hover');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('a, button, .service-card, .gallery-item, .team-card')) {
+      isHover = false;
+      cursor.classList.remove('cursor-candy--hover');
+    }
+  });
+
+  // Click: saltinho
+  document.addEventListener('mousedown', () => cursor.classList.add('cursor-candy--click'));
+  document.addEventListener('mouseup',   () => cursor.classList.remove('cursor-candy--click'));
+
+  document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
+  document.addEventListener('mouseenter', () => { cursor.style.opacity = '1'; });
+
+  // Lerp suave
+  function animate() {
+    curX += (mouseX - curX) * 0.14;
+    curY += (mouseY - curY) * 0.14;
+    cursor.style.left = curX + 'px';
+    cursor.style.top  = curY + 'px';
+    requestAnimationFrame(animate);
   }
-  animateRing();
-
-  // Esconde cursor nativo quando sai da janela
-  document.addEventListener('mouseleave', () => {
-    dot.style.opacity  = '0';
-    ring.style.opacity = '0';
-  });
-  document.addEventListener('mouseenter', () => {
-    dot.style.opacity  = '1';
-    ring.style.opacity = '1';
-  });
+  animate();
 }
 
 // ===== HOVER TILT NOS CARDS (efeito 3D CSS) =====
