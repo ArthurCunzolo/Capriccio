@@ -409,45 +409,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.classList.add('loading-active');
 
   let progress  = 0;
-  let ready     = false;
   let dismissed = false;
-
-  // ── Anima barra ──────────────────────────────────────
-  function advanceBar() {
-    const target = ready ? 100 : 82;
-    const speed  = ready ? 2.2 : 0.7;
-    if (progress < target) {
-      progress = Math.min(progress + speed, target);
-      bar.style.width = progress + '%';
-      requestAnimationFrame(advanceBar);
-    }
-    if (progress >= 100 && !dismissed) showHint();
-  }
-  advanceBar();
-
-  window.addEventListener('load', () => {
-    ready = true;
-    const finish = setInterval(() => {
-      progress = Math.min(progress + 2, 100);
-      bar.style.width = progress + '%';
-      if (progress >= 100) { clearInterval(finish); showHint(); }
-    }, 16);
-  });
-
-  function showHint() {
-    hint.classList.add('show');
-  }
 
   // ── Dismiss: cortinas saem, depois tela desaparece ───
   function dismiss() {
     if (dismissed) return;
-    if (progress < 100) return;
     dismissed = true;
 
-    // 1. cortinas deslizam para fora
     screen.classList.add('hide');
 
-    // 2. após cortinas (600ms), fade final e remove
     setTimeout(() => {
       screen.classList.add('done');
       document.body.classList.remove('loading-active');
@@ -456,15 +426,31 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => screen.remove(), 1100);
   }
 
-  window.addEventListener('wheel',     () => dismiss(), { passive: true });
-  window.addEventListener('touchmove', () => dismiss(), { passive: true });
-  window.addEventListener('keydown', e => {
-    if (['ArrowDown','PageDown','Space','Enter'].includes(e.code)) dismiss();
-  });
-  screen.addEventListener('click', () => { if (progress >= 100) dismiss(); });
+  // ── Barra animada: sobe até 100% e então fecha automaticamente ──
+  function advanceBar() {
+    // Sobe rapidamente nos primeiros 80%, desacelera até 95%,
+    // depois completa para 100% e fecha sozinha
+    const speed = progress < 80 ? 1.2
+                : progress < 95 ? 0.4
+                : 1.8;
 
-  // Safety net
-  setTimeout(() => { progress = 100; bar.style.width = '100%'; showHint(); }, 3000);
-  setTimeout(() => { if (!dismissed) { ready = true; progress = 100; dismiss(); } }, 7000);
+    progress = Math.min(progress + speed, 100);
+    bar.style.width = progress + '%';
+
+    if (progress < 100) {
+      requestAnimationFrame(advanceBar);
+    } else {
+      // Barra completa: mostra hint brevemente e fecha
+      if (hint) hint.classList.add('show');
+      setTimeout(dismiss, 900); // 0.9s de pausa exibindo o logo completo
+    }
+  }
+
+  // Aguarda o DOM carregar e inicia a animação
+  // (pequeno delay para o logo aparecer com estilo)
+  setTimeout(advanceBar, 400);
+
+  // Safety net: fecha em até 5s de qualquer forma
+  setTimeout(() => { if (!dismissed) dismiss(); }, 5000);
 })();
 

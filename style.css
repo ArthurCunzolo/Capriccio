@@ -1584,69 +1584,66 @@ ul {
   }
 }
 
-/* ===== CANVAS 3D GLOBAL (fixo, injetado pelo Three.js) =====
-   Um único <canvas> fixed como primeiro filho do body.
-   Seções transparentes deixam o efeito aparecer.
-   Seções de conteúdo ficam acima via z-index.            */
+/* ===== THREE.JS CANVAS CONTAINERS ===== */
 
-/* ── Seções que revelam o canvas global ── */
-.hero,
-#servicos,
-#contato {
-  background: transparent !important;
-  position: relative;
-  z-index: 1;
+/* Hero canvas — entre a imagem de fundo e o overlay */
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* acima da hero-bg (z:0) */
+  pointer-events: none;
 }
-
-.hero-overlay     { z-index: 2 !important; }
-.hero-content     { z-index: 3 !important; }
+/* Ajusta overlay e content para ficarem acima do canvas */
+.hero-overlay { z-index: 2 !important; }
+.hero-content  { z-index: 3 !important; }
 .hero-scroll-hint { z-index: 3 !important; }
-
-/* ── Seções sólidas ficam acima do canvas ── */
-.stats-bar,
-#sobre,
-#galeria,
-#equipe,
-.map-section,
-.footer {
-  position: relative;
-  z-index: 1;
+#hero-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* Stats: vidro escuro sobre o canvas */
+/* Stats canvas — cobre o fundo da stats-bar */
+#stats-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#stats-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 .stats-bar {
-  background: rgba(26, 13, 7, 0.82) !important;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Serviços: fundo escuro semi-transparente */
-#servicos {
-  background: rgba(26, 13, 7, 0.68) !important;
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+/* Services canvas — atrás do conteúdo */
+#services-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#services-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* Contato: semi-transparente */
-#contato {
-  background: rgba(20, 10, 5, 0.52) !important;
+/* Contact canvas */
+#contact-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.6;
 }
-
-/* ── Cards do contato: completamente sólidos ── */
-#contato .contact-info {
-  background: linear-gradient(145deg, #3E2415 0%, #2C1810 100%) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(197, 151, 59, 0.35);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.65), inset 0 1px 0 rgba(197,151,59,0.15);
-}
-#contato .contact-form {
-  background: #FFF8EC !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(197, 151, 59, 0.2);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8);
-  padding: 40px;
+#contact-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* ===== HERO SCROLL HINT ===== */
@@ -1716,6 +1713,32 @@ ul {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
+/* ===== CONTACT SECTION — cards sólidos e legíveis sobre a onda ===== */
+#contato .contact-wrapper {
+  position: relative;
+}
+#contato .contact-info {
+  background: linear-gradient(145deg, #3E2415 0%, #2C1810 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(197, 151, 59, 0.3);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(197, 151, 59, 0.15);
+}
+#contato .contact-form {
+  background: #FFF8EC;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(197, 151, 59, 0.2);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 40px;
+}
+
 /* ===== CURSOR PERSONALIZADO (desktop) ===== */
 @media (min-width: 1024px) and (hover: hover) {
   body { cursor: none; }
@@ -1763,8 +1786,10 @@ ul {
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  /* Esconde o canvas global injetado pelo Three.js */
-  body > canvas:first-of-type { display: none; }
+  #hero-canvas,
+  #stats-canvas,
+  #services-canvas,
+  #contact-canvas { display: none; }
 
   .scroll-wheel { animation: none; }
   .hero-scroll-hint { animation: none; opacity: 1; }
