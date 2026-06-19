@@ -1876,7 +1876,7 @@ body.loading-active { overflow: hidden; }
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  animation: fadeInUp 0.9s ease-out 0.1s both;
+  animation: fadeInUp 0.4s ease-out 0s both;
 }
 
 /* ── Logo wrap + anéis ── */
@@ -1907,7 +1907,7 @@ body.loading-active { overflow: hidden; }
   height: 110px;
   object-fit: contain;
   filter: drop-shadow(0 0 24px rgba(197, 151, 59, 0.6));
-  animation: loadingLogoPulse 2.4s ease-in-out infinite;
+  animation: loadingLogoPulse 1.2s ease-in-out infinite;
 }
 
 @keyframes loadingLogoPulse {
@@ -1918,7 +1918,7 @@ body.loading-active { overflow: hidden; }
   50% {
     filter: drop-shadow(0 0 38px rgba(197, 151, 59, 0.8))
             drop-shadow(0 0 60px rgba(197, 151, 59, 0.3));
-    transform: scale(1.05);
+    transform: scale(1.08);
   }
 }
 

@@ -426,32 +426,26 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => screen.remove(), 1100);
   }
 
-  // Tempo total da loading: 4000ms
-  // Barra completa em ~1000ms, depois logo fica exibido até 4000ms
-  const TOTAL_MS   = 4000; // duração total da tela
-  const BAR_MS     = 1000; // em quanto tempo a barra chega a 100%
-  const startTime  = performance.now();
+  // Tela fica 2500ms no total; barra completa em 800ms
+  // Logo fica animado e visível por ~1700ms após a barra completar
+  const TOTAL_MS  = 2500;
+  const BAR_MS    = 800;
+  const startTime = performance.now();
 
-  // ── Barra animada com duração fixa de 1s ──────────────────
   function advanceBar(now) {
     const elapsed = now - startTime;
     progress = Math.min((elapsed / BAR_MS) * 100, 100);
     bar.style.width = progress + '%';
-
     if (progress < 100) {
       requestAnimationFrame(advanceBar);
     } else {
-      // Barra completa: exibe "Entrando..." enquanto logo segue animado
       if (hint) hint.classList.add('show');
     }
   }
 
   requestAnimationFrame(advanceBar);
 
-  // Fecha exatamente após TOTAL_MS
   setTimeout(dismiss, TOTAL_MS);
-
-  // Safety net: fecha em até 6s de qualquer forma
-  setTimeout(() => { if (!dismissed) dismiss(); }, 6000);
+  setTimeout(() => { if (!dismissed) dismiss(); }, 5000);
 })();
 
