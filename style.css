@@ -1810,34 +1810,12 @@ body.loading-active { overflow: hidden; }
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: #1a0d07;   /* mais escuro que brown-dark para contraste */
+  background: #1a0d07;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* Sem transition aqui — as curtinas fazem a saída */
-}
-
-/* Quando dismiss, as curtinas deslizam e depois a tela some */
-#loading-screen.hide {
-  pointer-events: none;
-}
-#loading-screen.hide .loading-curtain--top {
-  transform: translateY(-100%);
-}
-#loading-screen.hide .loading-curtain--bottom {
-  transform: translateY(100%);
-}
-#loading-screen.hide .loading-content {
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-/* Após as cortinas saírem, o fundo some */
-#loading-screen.done {
-  opacity: 0;
-  transition: opacity 0.35s ease 0.55s;
-  visibility: hidden;
+  opacity: 1;
 }
 
 /* ── Canvas de partículas ── */

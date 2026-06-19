@@ -407,45 +407,35 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!screen) return;
 
   document.body.classList.add('loading-active');
-
-  let progress  = 0;
   let dismissed = false;
 
-  // ── Dismiss: cortinas saem, depois tela desaparece ───
+  // ── Fecha a tela com fade simples ────────────────────────
   function dismiss() {
     if (dismissed) return;
     dismissed = true;
-
-    screen.classList.add('hide');
-
-    setTimeout(() => {
-      screen.classList.add('done');
-      document.body.classList.remove('loading-active');
-    }, 620);
-
-    setTimeout(() => screen.remove(), 1100);
+    screen.style.transition = 'opacity 0.6s ease';
+    screen.style.opacity    = '0';
+    document.body.classList.remove('loading-active');
+    setTimeout(() => screen.remove(), 700);
   }
 
-  // Tela fica 2500ms no total; barra completa em 800ms
-  // Logo fica animado e visível por ~1700ms após a barra completar
-  const TOTAL_MS  = 2500;
-  const BAR_MS    = 800;
-  const startTime = performance.now();
+  // ── Barra: completa em 800ms via CSS transition ──────────
+  // Força reflow para garantir que a transition dispara
+  bar.style.width = '0%';
+  bar.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
 
-  function advanceBar(now) {
-    const elapsed = now - startTime;
-    progress = Math.min((elapsed / BAR_MS) * 100, 100);
-    bar.style.width = progress + '%';
-    if (progress < 100) {
-      requestAnimationFrame(advanceBar);
-    } else {
-      if (hint) hint.classList.add('show');
-    }
-  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bar.style.width = '100%';
+    });
+  });
 
-  requestAnimationFrame(advanceBar);
+  // Mostra "Entrando..." depois que a barra completar
+  setTimeout(() => {
+    if (hint) hint.classList.add('show');
+  }, 900);
 
-  setTimeout(dismiss, TOTAL_MS);
-  setTimeout(() => { if (!dismissed) dismiss(); }, 5000);
+  // Fecha após 2.5s totais
+  setTimeout(dismiss, 2500);
 })();
 
