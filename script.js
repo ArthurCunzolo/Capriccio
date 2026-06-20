@@ -240,39 +240,151 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== FORM HANDLER =====
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
   event.preventDefault();
 
-  const name = document.getElementById('name').value;
-  const email = document.getElementById('email').value;
-  const phone = document.getElementById('phone').value;
-  const eventType = document.getElementById('event').value;
-  const message = document.getElementById('message').value;
+  const name      = document.getElementById('name').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const phone     = document.getElementById('phone').value.trim();
+  const eventType = document.getElementById('event').value.trim();
+  const message   = document.getElementById('message').value.trim();
 
-  // Build WhatsApp message
-  let whatsappMessage = `Olá! Meu nome é ${name}.%0A`;
-  if (email) whatsappMessage += `E-mail: ${email}%0A`;
-  if (phone) whatsappMessage += `Telefone: ${phone}%0A`;
-  if (eventType) whatsappMessage += `Tipo de evento: ${eventType}%0A`;
-  if (message) whatsappMessage += `%0AMensagem: ${message}`;
-
-  // Open WhatsApp with message
-  window.open(`https://wa.me/5514999999999?text=${whatsappMessage}`, '_blank');
-
-  // Show success feedback
-  const btn = event.target.querySelector('button[type="submit"]');
+  const btn         = event.target.querySelector('button[type="submit"]');
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-    Mensagem Enviada!
-  `;
-  btn.style.background = '#25D366';
 
+  // Feedback visual de carregamento
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Gerando PDF...`;
+  btn.disabled = true;
+
+  // ── Gera o PDF com jsPDF ─────────────────────────────────
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const now = new Date().toLocaleString('pt-BR');
+
+    // Fundo marrom escuro no topo
+    doc.setFillColor(44, 24, 16);
+    doc.rect(0, 0, 210, 45, 'F');
+
+    // Título
+    doc.setTextColor(197, 151, 59);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(26);
+    doc.text('Capriccio', 105, 20, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(232, 213, 163);
+    doc.text('Salgados & Doces Artesanais — Jaú/SP', 105, 29, { align: 'center' });
+
+    doc.setFontSize(9);
+    doc.setTextColor(180, 150, 100);
+    doc.text('SOLICITAÇÃO DE ORÇAMENTO', 105, 38, { align: 'center' });
+
+    // Linha dourada decorativa
+    doc.setDrawColor(197, 151, 59);
+    doc.setLineWidth(0.5);
+    doc.line(20, 48, 190, 48);
+
+    // Data
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(120, 90, 60);
+    doc.text(`Gerado em: ${now}`, 20, 55);
+
+    // Dados do cliente
+    doc.setFillColor(252, 248, 240);
+    doc.roundedRect(20, 62, 170, 8, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(44, 24, 16);
+    doc.text('DADOS DO CLIENTE', 25, 68);
+
+    const campos = [
+      ['Nome',          name],
+      ['E-mail',        email     || '—'],
+      ['Telefone',      phone     || '—'],
+      ['Tipo de Evento',eventType || '—'],
+    ];
+
+    let y = 78;
+    campos.forEach(([label, valor]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(197, 151, 59);
+      doc.text(label + ':', 25, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(50, 30, 15);
+      doc.text(valor, 65, y);
+      y += 10;
+    });
+
+    // Mensagem
+    if (message) {
+      y += 4;
+      doc.setFillColor(252, 248, 240);
+      doc.roundedRect(20, y, 170, 8, 2, 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(44, 24, 16);
+      doc.text('MENSAGEM / DETALHES DO PEDIDO', 25, y + 6);
+      y += 16;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(50, 30, 15);
+      const linhas = doc.splitTextToSize(message, 160);
+      doc.text(linhas, 25, y);
+      y += linhas.length * 6;
+    }
+
+    // Rodapé
+    doc.setDrawColor(197, 151, 59);
+    doc.setLineWidth(0.3);
+    doc.line(20, 272, 190, 272);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 110, 70);
+    doc.text('Capriccio Salgados e Doces Artesanais  •  Jaú - SP  •  (14) 99651-4970', 105, 278, { align: 'center' });
+    doc.text('instagram.com/capricciosalgadosedoces', 105, 284, { align: 'center' });
+
+    // Faz download do PDF
+    doc.save(`orcamento-capriccio-${name.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+
+  } catch (err) {
+    console.warn('jsPDF não disponível, seguindo sem PDF:', err);
+  }
+
+  // ── Monta mensagem WhatsApp ───────────────────────────────
+  const linhas = [
+    '🍬 *Solicitação de Orçamento — Capriccio*',
+    '',
+    `👤 *Nome:* ${name}`,
+    email     ? `📧 *E-mail:* ${email}`          : null,
+    phone     ? `📱 *Telefone:* ${phone}`         : null,
+    eventType ? `🎉 *Tipo de evento:* ${eventType}` : null,
+    message   ? `\n💬 *Mensagem:*\n${message}`    : null,
+    '',
+    '_Orçamento gerado pelo site Capriccio_',
+  ].filter(l => l !== null).join('\n');
+
+  const url = `https://wa.me/5514996514970?text=${encodeURIComponent(linhas)}`;
+
+  // Pequena pausa para o PDF baixar antes de abrir o WhatsApp
   setTimeout(() => {
-    btn.innerHTML = originalHTML;
-    btn.style.background = '';
-    event.target.reset();
-  }, 3000);
+    window.open(url, '_blank');
+
+    // Feedback de sucesso
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Enviado!`;
+    btn.style.background = '#25D366';
+    btn.disabled = false;
+
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.style.background = '';
+      event.target.reset();
+    }, 3000);
+  }, 800);
 }
 
 // ===== PARALLAX EFFECT (subtle) =====
