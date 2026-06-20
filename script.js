@@ -327,13 +327,11 @@ function initCustomCursor() {
   cursor.innerHTML = brigadeiro;
   document.body.appendChild(cursor);
 
-  let mouseX = 0, mouseY = 0;
-  let curX = 0, curY = 0;
   let isHover = false;
 
   window.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
   });
 
   // Hover em links e botões: gira o brigadeiro
@@ -350,22 +348,12 @@ function initCustomCursor() {
     }
   });
 
-  // Click: saltinho
+  // Click: comprime
   document.addEventListener('mousedown', () => cursor.classList.add('cursor-candy--click'));
   document.addEventListener('mouseup',   () => cursor.classList.remove('cursor-candy--click'));
 
   document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
   document.addEventListener('mouseenter', () => { cursor.style.opacity = '1'; });
-
-  // Lerp suave
-  function animate() {
-    curX += (mouseX - curX) * 0.14;
-    curY += (mouseY - curY) * 0.14;
-    cursor.style.left = curX + 'px';
-    cursor.style.top  = curY + 'px';
-    requestAnimationFrame(animate);
-  }
-  animate();
 }
 
 // ===== HOVER TILT NOS CARDS (efeito 3D CSS) =====
