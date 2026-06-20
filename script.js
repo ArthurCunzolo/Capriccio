@@ -249,24 +249,23 @@ async function handleFormSubmit(event) {
   const eventType = document.getElementById('event').value.trim();
   const message   = document.getElementById('message').value.trim();
 
-  const btn         = event.target.querySelector('button[type="submit"]');
+  const btn          = event.target.querySelector('button[type="submit"]');
   const originalHTML = btn.innerHTML;
 
-  // Feedback visual de carregamento
   btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Gerando PDF...`;
   btn.disabled = true;
 
-  // ── Gera o PDF com jsPDF ─────────────────────────────────
+  let pdfNome = `orcamento-capriccio-${name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+
+  // ── Gera o PDF ───────────────────────────────────────────
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const now = new Date().toLocaleString('pt-BR');
 
-    // Fundo marrom escuro no topo
     doc.setFillColor(44, 24, 16);
     doc.rect(0, 0, 210, 45, 'F');
 
-    // Título
     doc.setTextColor(197, 151, 59);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(26);
@@ -281,18 +280,15 @@ async function handleFormSubmit(event) {
     doc.setTextColor(180, 150, 100);
     doc.text('SOLICITAÇÃO DE ORÇAMENTO', 105, 38, { align: 'center' });
 
-    // Linha dourada decorativa
     doc.setDrawColor(197, 151, 59);
     doc.setLineWidth(0.5);
     doc.line(20, 48, 190, 48);
 
-    // Data
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(120, 90, 60);
     doc.text(`Gerado em: ${now}`, 20, 55);
 
-    // Dados do cliente
     doc.setFillColor(252, 248, 240);
     doc.roundedRect(20, 62, 170, 8, 2, 2, 'F');
     doc.setFont('helvetica', 'bold');
@@ -301,10 +297,10 @@ async function handleFormSubmit(event) {
     doc.text('DADOS DO CLIENTE', 25, 68);
 
     const campos = [
-      ['Nome',          name],
-      ['E-mail',        email     || '—'],
-      ['Telefone',      phone     || '—'],
-      ['Tipo de Evento',eventType || '—'],
+      ['Nome',           name],
+      ['E-mail',         email     || '—'],
+      ['Telefone',       phone     || '—'],
+      ['Tipo de Evento', eventType || '—'],
     ];
 
     let y = 78;
@@ -319,7 +315,6 @@ async function handleFormSubmit(event) {
       y += 10;
     });
 
-    // Mensagem
     if (message) {
       y += 4;
       doc.setFillColor(252, 248, 240);
@@ -335,10 +330,8 @@ async function handleFormSubmit(event) {
       doc.setTextColor(50, 30, 15);
       const linhas = doc.splitTextToSize(message, 160);
       doc.text(linhas, 25, y);
-      y += linhas.length * 6;
     }
 
-    // Rodapé
     doc.setDrawColor(197, 151, 59);
     doc.setLineWidth(0.3);
     doc.line(20, 272, 190, 272);
@@ -348,11 +341,11 @@ async function handleFormSubmit(event) {
     doc.text('Capriccio Salgados e Doces Artesanais  •  Jaú - SP  •  (14) 99651-4970', 105, 278, { align: 'center' });
     doc.text('instagram.com/capricciosalgadosedoces', 105, 284, { align: 'center' });
 
-    // Faz download do PDF
-    doc.save(`orcamento-capriccio-${name.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+    doc.save(pdfNome);
 
   } catch (err) {
-    console.warn('jsPDF não disponível, seguindo sem PDF:', err);
+    console.warn('jsPDF não disponível:', err);
+    pdfNome = null;
   }
 
   // ── Monta mensagem WhatsApp ───────────────────────────────
@@ -360,31 +353,57 @@ async function handleFormSubmit(event) {
     '🍬 *Solicitação de Orçamento — Capriccio*',
     '',
     `👤 *Nome:* ${name}`,
-    email     ? `📧 *E-mail:* ${email}`          : null,
-    phone     ? `📱 *Telefone:* ${phone}`         : null,
+    email     ? `📧 *E-mail:* ${email}`            : null,
+    phone     ? `📱 *Telefone:* ${phone}`           : null,
     eventType ? `🎉 *Tipo de evento:* ${eventType}` : null,
-    message   ? `\n💬 *Mensagem:*\n${message}`    : null,
+    message   ? `\n💬 *Mensagem:*\n${message}`      : null,
     '',
-    '_Orçamento gerado pelo site Capriccio_',
+    pdfNome ? `📎 _PDF "${pdfNome}" baixado — anexe o arquivo nesta conversa._` : null,
   ].filter(l => l !== null).join('\n');
 
-  const url = `https://wa.me/5514996514970?text=${encodeURIComponent(linhas)}`;
+  const waUrl = `https://wa.me/5514996514970?text=${encodeURIComponent(linhas)}`;
 
-  // Pequena pausa para o PDF baixar antes de abrir o WhatsApp
+  // ── Mostra modal de instrução ─────────────────────────────
+  showPdfModal(pdfNome, waUrl);
+
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> PDF Gerado!`;
+  btn.style.background = '#25D366';
+  btn.disabled = false;
+
   setTimeout(() => {
-    window.open(url, '_blank');
+    btn.innerHTML = originalHTML;
+    btn.style.background = '';
+    event.target.reset();
+  }, 4000);
+}
 
-    // Feedback de sucesso
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Enviado!`;
-    btn.style.background = '#25D366';
-    btn.disabled = false;
+// ── Modal de instrução pós-PDF ────────────────────────────────
+function showPdfModal(pdfNome, waUrl) {
+  // Remove modal anterior se existir
+  document.getElementById('pdf-modal')?.remove();
 
-    setTimeout(() => {
-      btn.innerHTML = originalHTML;
-      btn.style.background = '';
-      event.target.reset();
-    }, 3000);
-  }, 800);
+  const modal = document.createElement('div');
+  modal.id = 'pdf-modal';
+  modal.innerHTML = `
+    <div class="pdf-modal-overlay" onclick="document.getElementById('pdf-modal').remove()"></div>
+    <div class="pdf-modal-box">
+      <div class="pdf-modal-icon">📄</div>
+      <h3>PDF gerado com sucesso!</h3>
+      <p>O arquivo <strong>${pdfNome || 'orçamento'}</strong> foi baixado para o seu dispositivo.</p>
+      <p class="pdf-modal-tip">Clique em <strong>"Abrir WhatsApp"</strong>, depois anexe o PDF na conversa usando o ícone de clipe 📎.</p>
+      <div class="pdf-modal-actions">
+        <a href="${waUrl}" target="_blank" rel="noopener" class="pdf-modal-btn pdf-modal-btn--wa"
+           onclick="setTimeout(()=>document.getElementById('pdf-modal')?.remove(), 500)">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Abrir WhatsApp
+        </a>
+        <button class="pdf-modal-btn pdf-modal-btn--close" onclick="document.getElementById('pdf-modal').remove()">
+          Fechar
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
 // ===== PARALLAX EFFECT (subtle) =====
