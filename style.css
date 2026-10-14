@@ -1220,6 +1220,13 @@ ul {
   opacity: 0.6;
 }
 
+/* No celular os botões flutuantes (WhatsApp e voltar ao topo) cobriam o copyright */
+@media (max-width: 768px) {
+  .footer-bottom {
+    padding-bottom: 160px;
+  }
+}
+
 /* ===== WHATSAPP FLOATING BUTTON ===== */
 .whatsapp-float {
   position: fixed;
