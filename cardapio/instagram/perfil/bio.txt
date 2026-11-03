@@ -1,0 +1,30 @@
+INSTAGRAM
+Nome (campo "Nome", é o que aparece na busca — até 30 caracteres):
+Capriccio Salgados e Doces
+
+Bio (até 150 caracteres — esta tem 129):
+🥟 Salgados, doces e bolos artesanais
+🎉 Festas, casamentos e eventos
+📍 Jaú/SP
+📲 Encomendas: (14) 99651-4970
+👇 Veja o cardápio 2026
+
+Link (campo "Links"):
+https://capriccio-peach.vercel.app/cardapio/
+
+
+FACEBOOK
+Apresentação / Bio (até 101 caracteres — esta tem 95):
+Salgados, doces e bolos artesanais para festas e eventos em Jaú/SP. Encomendas: (14) 99651-4970
+
+Descrição da página (seção "Sobre"):
+A Capriccio faz salgados, doces e bolos artesanais para aniversários, casamentos, eventos corporativos e todas as ocasiões especiais. Tudo é feito à mão, com receitas caprichadas e ingredientes selecionados, para a sua festa ter o sabor que merece.
+
+Confira o cardápio 2026 com fotos e preços: https://capriccio-peach.vercel.app/cardapio/
+
+📲 Encomendas pelo WhatsApp: (14) 99651-4970
+📍 R. Miguel Sancinetti, 112 – Jardim Netinho Prado, Jaú/SP
+🕗 Segunda a sexta, das 8h às 18h · Sábado, das 8h às 14h
+
+Site (campo "Site"):
+https://capriccio-peach.vercel.app/cardapio/
