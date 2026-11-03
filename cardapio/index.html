@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápio Capriccio 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brown-dark: #2C1810;
+    --brown: #3E2415;
+    --brown-medium: #5C3A24;
+    --brown-light: #8B6E57;
+    --gold: #C5973B;
+    --gold-light: #D4AD5A;
+    --gold-pale: #E8D5A3;
+    --cream: #FFF8EC;
+    --cream-dark: #F5E6C8;
+    --display: 'Playfair Display', Georgia, serif;
+    --elegant: 'Cormorant Garamond', Georgia, serif;
+    --body: 'Raleway', 'Helvetica Neue', sans-serif;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #6b5444; }
+  body {
+    font-family: var(--body);
+    color: var(--brown-dark);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 297mm;
+    margin: 10mm auto;
+    position: relative; overflow: hidden;
+    background: var(--cream);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    page-break-after: always; break-after: page;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  @media print {
+    html, body { background: none; }
+    .page { margin: 0; box-shadow: none; }
+  }
+
+  /* Moldura dourada fina das páginas internas */
+  .frame {
+    position: absolute; inset: 7mm;
+    border: .35mm solid var(--gold);
+    pointer-events: none;
+  }
+  .frame::after {
+    content: ""; position: absolute; inset: 1.2mm;
+    border: .15mm solid var(--gold-pale);
+  }
+
+  /* ---------- CAPA ---------- */
+  .cover { background: var(--brown-dark); color: var(--cream); }
+  .cover .mosaic {
+    position: absolute; left: 0; right: 0; top: 0; height: 168mm;
+    display: grid; grid-template-columns: 1.25fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.6mm;
+  }
+  .cover .mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover .mosaic img:first-child { grid-row: 1 / 3; }
+  .cover .mosaic::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(44,24,16,0) 55%, rgba(44,24,16,.85) 92%, var(--brown-dark) 100%);
+  }
+  .cover .brand {
+    position: absolute; left: 0; right: 0; top: 136mm;
+    text-align: center;
+  }
+  .cover .brand img { width: 118mm; display: block; margin: 0 auto; filter: drop-shadow(0 3mm 6mm rgba(0,0,0,.45)); }
+  .cover .title {
+    font-family: var(--display); font-weight: 600;
+    font-size: 21pt; letter-spacing: 9pt; text-transform: uppercase;
+    color: var(--gold-light); margin-top: 3mm;
+  }
+  .cover .year {
+    font-family: var(--elegant); font-style: italic; font-weight: 500;
+    font-size: 30pt; color: var(--cream); margin-top: -1mm;
+  }
+  .ornament { display: flex; align-items: center; justify-content: center; gap: 3mm; margin: 5mm auto; color: var(--gold); }
+  .ornament span { display: block; width: 26mm; height: .3mm; background: currentColor; }
+  .ornament i { display: block; width: 2.4mm; height: 2.4mm; transform: rotate(45deg); border: .3mm solid currentColor; }
+  .cover .tagline {
+    font-family: var(--body); font-size: 9.5pt; letter-spacing: 4pt; text-transform: uppercase;
+    color: var(--gold-pale);
+  }
+  .cover .foot {
+    position: absolute; left: 0; right: 0; bottom: 14mm; text-align: center;
+    font-family: var(--elegant); font-style: italic; font-size: 14pt; color: var(--cream-dark); opacity: .9;
+  }
+  .cover .frame { border-color: rgba(197,151,59,.7); }
+  .cover .frame::after { border-color: rgba(197,151,59,.25); }
+
+  /* ---------- CABEÇALHO DE SEÇÃO ---------- */
+  .inner { padding: 17mm 18mm 0; }
+  .head { text-align: center; }
+  .head .kicker {
+    font-size: 8pt; letter-spacing: 3.5pt; text-transform: uppercase; color: var(--gold); font-weight: 600;
+  }
+  .head h2 {
+    font-family: var(--display); font-weight: 600; font-size: 34pt; line-height: 1.05;
+    color: var(--brown-dark); margin-top: 1.5mm;
+  }
+  .head .sub {
+    font-family: var(--elegant); font-style: italic; font-size: 14pt; color: var(--brown-medium);
+  }
+  .head .ornament { margin: 3mm auto 0; }
+
+  /* ---------- LISTAS DE ITENS ---------- */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 11mm; }
+  .item {
+    display: flex; align-items: baseline; gap: 1.6mm;
+    font-size: 9.6pt; line-height: 1.25; padding: 1.55mm 0;
+    border-bottom: .15mm dotted rgba(139,110,87,.35);
+  }
+  .item .name { color: var(--brown-dark); font-weight: 500; }
+  .item .dots { flex: 1; }
+  .item .price {
+    font-family: var(--display); font-weight: 600; font-size: 10.5pt; color: var(--gold);
+    white-space: nowrap;
+  }
+  .item .price small { font-family: var(--body); font-size: 7pt; font-weight: 600; margin-right: .6mm; color: var(--brown-light); }
+  .item .unit { font-family: var(--body); font-size: 7pt; color: var(--brown-light); font-weight: 500; margin-left: .8mm; }
+
+  .group-title {
+    display: flex; align-items: center; gap: 3mm;
+    font-family: var(--display); font-weight: 600; font-size: 14pt; color: var(--brown);
+    margin: 6mm 0 1.5mm;
+  }
+  .group-title::after { content: ""; flex: 1; height: .25mm; background: linear-gradient(90deg, var(--gold), rgba(197,151,59,0)); }
+  .group-title em { font-family: var(--elegant); font-size: 11.5pt; font-weight: 500; color: var(--brown-light); }
+
+  /* ---------- FAIXA DE FOTOS ---------- */
+  .photos { position: absolute; left: 0; right: 0; bottom: 0; display: grid; gap: 1.4mm; }
+  .photos figure { position: relative; overflow: hidden; }
+  .photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photos figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 6mm 3mm 2.2mm;
+    background: linear-gradient(180deg, rgba(44,24,16,0), rgba(44,24,16,.82));
+    color: var(--cream); font-family: var(--elegant); font-style: italic; font-weight: 600; font-size: 11.5pt;
+  }
+  .photos::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -1.4mm; height: 1.4mm; background: var(--gold);
+    z-index: 2;
+  }
+
+  /* ---------- BOLOS ---------- */
+  table.cakes { width: 100%; border-collapse: collapse; margin-top: 2mm; }
+  table.cakes th {
+    font-size: 7.5pt; letter-spacing: 1.8pt; text-transform: uppercase; font-weight: 700;
+    color: var(--cream); background: var(--brown); padding: 2.4mm 2mm; text-align: center;
+  }
+  table.cakes th:first-child { text-align: left; padding-left: 4mm; }
+  table.cakes td {
+    padding: 1.9mm 2mm; border-bottom: .15mm solid rgba(139,110,87,.25);
+    text-align: center; font-family: var(--display); font-weight: 600; font-size: 10.5pt; color: var(--gold);
+  }
+  table.cakes td:first-child {
+    text-align: left; padding-left: 4mm; font-family: var(--body); font-weight: 500; font-size: 9.6pt; color: var(--brown-dark);
+  }
+  table.cakes tr:nth-child(even) td { background: rgba(232,213,163,.28); }
+  table.cakes tr.sep td { padding: 1.4mm 4mm; background: none; border-bottom: none; text-align: left;
+    font-family: var(--elegant); font-style: italic; font-size: 11.5pt; color: var(--brown-light); font-weight: 500; }
+  .note {
+    margin-top: 4mm; font-family: var(--elegant); font-style: italic; font-size: 11.5pt; color: var(--brown-medium); text-align: center;
+  }
+  .note b { font-style: normal; font-family: var(--display); color: var(--gold); font-weight: 600; }
+
+  /* ---------- CONTRACAPA ---------- */
+  .back { background: var(--brown-dark); color: var(--cream); }
+  .back .hero { position: absolute; left: 0; right: 0; top: 0; height: 96mm; }
+  .back .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .back .hero::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(44,24,16,.1) 40%, var(--brown-dark) 100%);
+  }
+  .back .content { position: absolute; left: 0; right: 0; top: 74mm; text-align: center; padding: 0 18mm; }
+  .back .content img.logo { width: 82mm; filter: drop-shadow(0 3mm 6mm rgba(0,0,0,.5)); }
+  .back h2 {
+    font-family: var(--display); font-weight: 600; font-size: 27pt; color: var(--cream); margin-top: 3mm;
+  }
+  .back .lead { font-family: var(--elegant); font-style: italic; font-size: 14.5pt; color: var(--gold-pale); margin-top: 1.5mm; }
+  .qrs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7mm; margin-top: 9mm; }
+  .qr {
+    background: var(--cream); border-radius: 3mm; padding: 5mm 4mm 4.5mm;
+    color: var(--brown-dark); box-shadow: 0 2mm 6mm rgba(0,0,0,.35);
+    border-top: 1.2mm solid var(--gold);
+  }
+  .qr img { width: 100%; aspect-ratio: 1; display: block; background: #fff; }
+  .qr .label { display: flex; align-items: center; justify-content: center; gap: 1.8mm; margin-top: 3.5mm;
+    font-family: var(--display); font-weight: 600; font-size: 13pt; }
+  .qr .label svg { width: 5mm; height: 5mm; fill: var(--gold); }
+  .qr .handle { font-size: 7.6pt; color: var(--brown-medium); margin-top: 1mm; font-weight: 500; word-break: break-word; }
+  .phone {
+    margin-top: 10mm; display: inline-flex; align-items: center; gap: 3mm;
+    border: .35mm solid var(--gold); border-radius: 20mm; padding: 3mm 8mm;
+    font-family: var(--display); font-size: 17pt; font-weight: 600; color: var(--gold-light);
+  }
+  .phone svg { width: 6.5mm; height: 6.5mm; fill: var(--gold-light); }
+  .back .small { margin-top: 5mm; font-size: 8pt; letter-spacing: 3pt; text-transform: uppercase; color: var(--gold-pale); opacity: .8; }
+  .back .frame { border-color: rgba(197,151,59,.7); }
+  .back .frame::after { border-color: rgba(197,151,59,.25); }
+
+  /* ---------- Tela pequena (visualização no celular) ---------- */
+  @media screen and (max-width: 820px) {
+    body { zoom: calc(100vw / 820px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= CAPA ======================= -->
+<section class="page cover">
+  <div class="mosaic">
+    <img src="../images/Capriccio/SalgadosVariados.jpg" alt="Salgados variados Capriccio">
+    <img src="../images/Capriccio/MorangoChocolate.jpg" alt="Morangos banhados no chocolate">
+    <img src="../images/Capriccio/BoloDoceLeite.jpg" alt="Bolo de doce de leite">
+  </div>
+  <div class="frame"></div>
+  <div class="brand">
+    <img src="../images/logo.png" alt="Capriccio — Salgados e Doces Artesanais">
+    <div class="title">Cardápio</div>
+    <div class="year">2026</div>
+    <div class="ornament"><span></span><i></i><span></span></div>
+    <div class="tagline">Salgados &nbsp;·&nbsp; Doces &nbsp;·&nbsp; Bolos</div>
+  </div>
+  <div class="foot">Feitos à mão para a sua festa</div>
+</section>
+
+<!-- ======================= SALGADOS ======================= -->
+<section class="page">
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="head">
+      <div class="kicker">Valor por cento</div>
+      <h2>Salgados</h2>
+      <div class="ornament"><span></span><i></i><span></span></div>
+    </div>
+
+    <div class="cols" style="margin-top:4mm">
+      <div>
+        <div class="item"><span class="name">Barca de calabresa com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Barca de escarola com queijo</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Barca de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Bolinha de carne seca</span><span class="dots"></span><span class="price"><small>R$</small>210,00</span></div>
+        <div class="item"><span class="name">Bolinha de queijo mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+        <div class="item"><span class="name">Cigarrete de provolone</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+        <div class="item"><span class="name">Cigarrete de queijo mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Coxinha de frango</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+        <div class="item"><span class="name">Coxinha de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Croquete de bacalhau (Porto)</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+        <div class="item"><span class="name">Croquete de carne</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Croquete de milho com mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>105,00</span></div>
+        <div class="item"><span class="name">Empada de camarão</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+        <div class="item"><span class="name">Empada de frango com palmito</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+        <div class="item"><span class="name">Empada de frango ou palmito</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Enroladinho de salsicha</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+        <div class="item"><span class="name">Esfiha de carne</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+      </div>
+      <div>
+        <div class="item"><span class="name">Folhado de maçã com bacon</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+        <div class="item"><span class="name">Folhado de tomate seco / bacon / ameixa</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+        <div class="item"><span class="name">Mini espetinho de frango com bacon</span><span class="dots"></span><span class="price"><small>R$</small>155,00</span></div>
+        <div class="item"><span class="name">Mini pizza</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Ouriço de mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+        <div class="item"><span class="name">Pastel de peru com cream cheese no gergelim</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+        <div class="item"><span class="name">Pastelzinho assado de ricota, presunto e passas</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Pastelzinho assado de palmito</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Quibe</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Quiche de alho-poró</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Risole de camarão</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+        <div class="item"><span class="name">Risole de carne</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+        <div class="item"><span class="name">Risole de catupiry</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Risole de palmito</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Risole de presunto e queijo</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+        <div class="item"><span class="name">Trouxinha de ricota com tomate seco</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+        <div class="item"><span class="name">Trouxinha de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      </div>
+    </div>
+
+    <div class="group-title">Mini lanches <em>valor por unidade</em></div>
+    <div class="cols">
+      <div class="item"><span class="name">X-Burger artesanal coquetel</span><span class="dots"></span><span class="price"><small>R$</small>2,75<span class="unit">un.</span></span></div>
+      <div class="item"><span class="name">Cachorro-quente coquetel</span><span class="dots"></span><span class="price"><small>R$</small>2,75<span class="unit">un.</span></span></div>
+    </div>
+  </div>
+
+  <div class="photos" style="height:62mm; grid-template-columns: 1.3fr 1fr 1fr;">
+    <figure><img src="../images/Capriccio/SalgadosVariados.jpg" alt=""><figcaption>Salgados sortidos</figcaption></figure>
+    <figure><img src="../images/Capriccio/Kibe.jpg" alt=""><figcaption>Quibe</figcaption></figure>
+    <figure><img src="../images/Capriccio/Hamburguinho.jpg" alt=""><figcaption>X-Burger coquetel</figcaption></figure>
+  </div>
+</section>
+
+<!-- ======================= DOCES ======================= -->
+<section class="page">
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="head">
+      <div class="kicker">Valor por cento</div>
+      <h2>Doces</h2>
+      <div class="ornament"><span></span><i></i><span></span></div>
+    </div>
+
+    <div class="group-title" style="margin-top:4mm">Tradicionais</div>
+    <div class="cols">
+      <div>
+        <div class="item"><span class="name">Beijinho</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+        <div class="item"><span class="name">Brigadeiro</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+        <div class="item"><span class="name">Bicho de pé</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+        <div class="item"><span class="name">Romance</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+        <div class="item"><span class="name">Sensação</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+      </div>
+      <div>
+        <div class="item"><span class="name">Cajuzinho</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+        <div class="item"><span class="name">Casadinho</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+        <div class="item"><span class="name">Brigadeiro de leite Ninho</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+        <div class="item"><span class="name">Olho de sogra</span><span class="dots"></span><span class="price"><small>R$</small>150,00</span></div>
+        <div class="item"><span class="name">Docinho de churros</span><span class="dots"></span><span class="price"><small>R$</small>150,00</span></div>
+      </div>
+    </div>
+
+    <div class="group-title">Finos</div>
+    <div class="cols">
+      <div>
+        <div class="item"><span class="name">Tortinha de limão</span><span class="dots"></span><span class="price"><small>R$</small>210,00</span></div>
+        <div class="item"><span class="name">Tortinha de maracujá</span><span class="dots"></span><span class="price"><small>R$</small>210,00</span></div>
+        <div class="item"><span class="name">Damasco</span><span class="dots"></span><span class="price"><small>R$</small>220,00</span></div>
+      </div>
+      <div>
+        <div class="item"><span class="name">Frutas banhadas no chocolate</span><span class="dots"></span><span class="price"><small>R$</small>230,00</span></div>
+        <div class="item"><span class="name">Uva com beijinho e chocolate</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+        <div class="item"><span class="name">Camafeu</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="photos" style="height:150mm; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;">
+    <figure style="grid-row: 1 / 3"><img src="../images/Capriccio/MorangoChocolate.jpg" alt=""><figcaption>Frutas banhadas no chocolate</figcaption></figure>
+    <figure><img src="../images/Capriccio/Camafeu.jpg" alt="" style="object-position: center 40%"><figcaption>Camafeu</figcaption></figure>
+    <figure><img src="../images/gallery-doces.png" alt=""><figcaption>Docinhos tradicionais</figcaption></figure>
+  </div>
+</section>
+
+<!-- ======================= BOLOS ======================= -->
+<section class="page">
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="head">
+      <div class="kicker">Valor por quantidade de fatias</div>
+      <h2>Bolos</h2>
+      <div class="ornament"><span></span><i></i><span></span></div>
+    </div>
+
+    <table class="cakes" style="margin-top:4mm">
+      <thead>
+        <tr><th>Sabor</th><th>20 fatias</th><th>40 fatias</th><th>60 fatias</th><th>80 fatias</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ninho</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Coco</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Prestígio</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Brigadeiro</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Creme</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Doce de leite</td><td>130,00</td><td>200,00</td><td>270,00</td><td>330,00</td></tr>
+        <tr><td>Trufado</td><td>150,00</td><td>234,00</td><td>318,00</td><td>390,00</td></tr>
+        <tr><td>Floresta negra</td><td>150,00</td><td>234,00</td><td>318,00</td><td>390,00</td></tr>
+        <tr><td>Casadinho</td><td>160,00</td><td>245,00</td><td>320,00</td><td>400,00</td></tr>
+        <tr><td>Doce de leite com nozes e Ninho</td><td>170,00</td><td>260,00</td><td>350,00</td><td>430,00</td></tr>
+        <tr class="sep"><td colspan="5">Acréscimos</td></tr>
+        <tr><td>Massa folhada</td><td>15,00</td><td>25,00</td><td>30,00</td><td>35,00</td></tr>
+        <tr><td>Frutas</td><td>15,00</td><td>25,00</td><td>30,00</td><td>35,00</td></tr>
+        <tr><td>Nozes</td><td>25,00</td><td>30,00</td><td>35,00</td><td>40,00</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Valores em reais (R$) &nbsp;·&nbsp; Bolo salgado <b>R$ 75,00</b></p>
+  </div>
+
+  <div class="photos" style="height:88mm; grid-template-columns: 1fr 1fr 1fr;">
+    <figure><img src="../images/Capriccio/BoloDoceLeite.jpg" alt=""><figcaption>Doce de leite</figcaption></figure>
+    <figure><img src="../images/Capriccio/BoloProdutos.jpg" alt=""><figcaption>Doce de leite com nozes e Ninho</figcaption></figure>
+    <figure><img src="../images/Capriccio/BodasNinho.jpg" alt=""><figcaption>Bolos personalizados</figcaption></figure>
+  </div>
+</section>
+
+<!-- ======================= CONTRACAPA / CONTATO ======================= -->
+<section class="page back">
+  <div class="hero"><img src="../images/Capriccio/ChcolateBrancoMorango.jpg" alt="" style="object-position:center 45%"></div>
+  <div class="frame"></div>
+  <div class="content">
+    <img class="logo" src="../images/logo.png" alt="Capriccio">
+    <h2>Faça sua encomenda</h2>
+    <p class="lead">Aponte a câmera do celular para um dos códigos</p>
+
+    <div class="qrs">
+      <div class="qr">
+        <img src="qr/whatsapp.svg" alt="QR code do WhatsApp da Capriccio">
+        <div class="label"><svg viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg>WhatsApp</div>
+        <div class="handle">(14) 99651-4970</div>
+      </div>
+      <div class="qr">
+        <img src="qr/instagram.svg" alt="QR code do Instagram da Capriccio">
+        <div class="label"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85 0 3.2-.01 3.58-.07 4.85-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07-3.2 0-3.58-.01-4.85-.07-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.64-.07-4.85 0-3.2.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95C23.73 2.7 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>Instagram</div>
+        <div class="handle">@capricciosalgadosedoces</div>
+      </div>
+      <div class="qr">
+        <img src="qr/facebook.svg" alt="QR code do Facebook da Capriccio">
+        <div class="label"><svg viewBox="0 0 24 24"><path d="M24 12.07C24 5.45 18.63.07 12 .07S0 5.45 0 12.07c0 5.99 4.39 10.95 10.13 11.85v-8.38H7.08v-3.47h3.05V9.43c0-3.01 1.79-4.67 4.53-4.67 1.31 0 2.69.24 2.69.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87v2.25h3.33l-.53 3.47h-2.8v8.38C19.61 23.03 24 18.06 24 12.07z"/></svg>Facebook</div>
+        <div class="handle">/capriccioSalgados</div>
+      </div>
+    </div>
+
+    <div class="phone"><svg viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg>(14) 99651-4970</div>
+    <div class="small">Salgados e Doces Artesanais</div>
+  </div>
+</section>
+
+</body>
+</html>
