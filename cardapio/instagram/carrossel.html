@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Carrossel Capriccio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brown-dark: #2C1810; --brown: #3E2415; --brown-medium: #5C3A24; --brown-light: #8B6E57;
+    --gold: #C5973B; --gold-light: #D4AD5A; --gold-pale: #E8D5A3; --cream: #FFF8EC; --cream-dark: #F5E6C8;
+    --display: 'Playfair Display', Georgia, serif;
+    --elegant: 'Cormorant Garamond', Georgia, serif;
+    --body: 'Raleway', 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #555; font-family: var(--body); color: var(--brown-dark); padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; }
+  .slide { width: 1080px; height: 1350px; position: relative; overflow: hidden; background: var(--cream); display: flex; flex-direction: column; }
+  .story { height: 1920px; }
+  .dark { background: var(--brown-dark); color: var(--cream); }
+
+  .frame { position: absolute; inset: 34px; border: 2px solid var(--gold); pointer-events: none; z-index: 5; }
+  .frame::after { content: ""; position: absolute; inset: 8px; border: 1px solid var(--gold-pale); }
+  .dark .frame { border-color: rgba(197,151,59,.75); }
+  .dark .frame::after { border-color: rgba(197,151,59,.28); }
+
+  .band { position: relative; flex: none; display: grid; gap: 8px; grid-template-rows: minmax(0,1fr); grid-auto-columns: minmax(0,1fr); }
+  .band img, .mosaic img, .gallery img { min-width: 0; min-height: 0; }
+  .band img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .band::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: var(--gold); }
+
+  .ornament { display: flex; align-items: center; justify-content: center; gap: 18px; color: var(--gold); }
+  .ornament span { display: block; width: 130px; height: 2px; background: currentColor; }
+  .ornament i { display: block; width: 14px; height: 14px; transform: rotate(45deg); border: 2px solid currentColor; }
+
+  .body { flex: 1; padding: 46px 96px 0; display: flex; flex-direction: column; }
+  .head { text-align: center; }
+  .kicker { font-size: 22px; letter-spacing: 9px; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .head h2 { font-family: var(--display); font-weight: 600; font-size: 92px; line-height: 1.05; color: var(--brown-dark); margin-top: 4px; }
+  .head h2 small { font-family: var(--elegant); font-style: italic; font-weight: 500; font-size: 44px; color: var(--brown-light); margin-left: 10px; }
+  .head .ornament { margin-top: 12px; }
+
+  .list { margin-top: 26px; }
+  .item { display: flex; align-items: baseline; gap: 12px; font-size: 28.5px; line-height: 1.15; padding: 7px 0; border-bottom: 2px dotted rgba(139,110,87,.32); }
+  .item .name { font-weight: 500; }
+  .item .dots { flex: 1; }
+  .item .price { font-family: var(--display); font-weight: 600; font-size: 31px; color: var(--gold); white-space: nowrap; }
+  .item .price small { font-family: var(--body); font-size: 19px; font-weight: 700; color: var(--brown-light); margin-right: 4px; }
+  .item .price em { font-family: var(--body); font-style: normal; font-size: 19px; color: var(--brown-light); margin-left: 4px; font-weight: 600; }
+  .group { display: flex; align-items: center; gap: 18px; font-family: var(--display); font-weight: 600; font-size: 40px; color: var(--brown); margin: 26px 0 4px; }
+  .group::after { content: ""; flex: 1; height: 2px; background: linear-gradient(90deg, var(--gold), rgba(197,151,59,0)); }
+  .group em { font-family: var(--elegant); font-size: 30px; font-weight: 500; color: var(--brown-light); }
+
+  .foot { flex: none; height: 104px; padding: 0 96px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 21px; letter-spacing: 3px; color: var(--brown-light); font-weight: 600; }
+  .foot b { color: var(--gold); font-weight: 700; }
+  .dark .foot { color: var(--gold-pale); }
+
+  table.cakes { width: 100%; border-collapse: collapse; margin-top: 26px; }
+  table.cakes th { font-size: 19px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; color: var(--cream); background: var(--brown); padding: 14px 6px; }
+  table.cakes th:first-child { text-align: left; padding-left: 18px; }
+  table.cakes td { padding: 10px 6px; text-align: center; font-family: var(--display); font-weight: 600; font-size: 29px; color: var(--gold); border-bottom: 1px solid rgba(139,110,87,.22); }
+  table.cakes td:first-child { text-align: left; padding-left: 18px; font-family: var(--body); font-weight: 500; font-size: 27px; color: var(--brown-dark); }
+  table.cakes tr:nth-child(even) td { background: rgba(232,213,163,.3); }
+  table.cakes tr.sep td { background: none; border: none; padding: 16px 18px 6px; font-family: var(--elegant); font-style: italic; font-size: 32px; color: var(--brown-light); font-weight: 600; }
+  .note { margin-top: 18px; text-align: center; font-family: var(--elegant); font-style: italic; font-size: 30px; color: var(--brown-medium); }
+  .note b { font-style: normal; font-family: var(--display); color: var(--gold); }
+
+  /* capa */
+  .cover .mosaic { position: absolute; left: 0; right: 0; top: 0; height: 720px; display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .cover .mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover .mosaic img:first-child { grid-row: 1 / 3; }
+  .cover .mosaic::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(44,24,16,0) 50%, rgba(44,24,16,.85) 88%, var(--brown-dark) 100%); }
+  .center { position: absolute; left: 0; right: 0; text-align: center; }
+  .logo { display: block; margin: 0 auto; filter: drop-shadow(0 16px 30px rgba(0,0,0,.5)); }
+  .big-title { font-family: var(--display); font-weight: 600; font-size: 70px; letter-spacing: 26px; text-transform: uppercase; color: var(--gold-light); margin-left: 26px; }
+  .year { font-family: var(--elegant); font-style: italic; font-weight: 500; font-size: 92px; line-height: 1; color: var(--cream); }
+  .tag { font-size: 27px; letter-spacing: 11px; text-transform: uppercase; color: var(--gold-pale); }
+  .swipe { display: inline-flex; align-items: center; gap: 16px; font-family: var(--elegant); font-style: italic; font-size: 38px; color: var(--cream-dark); }
+  .swipe svg { width: 46px; height: 46px; stroke: var(--gold-light); fill: none; stroke-width: 2; }
+
+  /* galeria */
+  .gallery { position: absolute; inset: 0 0 330px 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: var(--gold); }
+
+  /* CTA */
+  .pill { display: inline-flex; align-items: center; gap: 20px; border-radius: 100px; padding: 26px 54px; font-family: var(--display); font-weight: 600; }
+  .pill svg { width: 54px; height: 54px; }
+  .pill.wa { background: var(--gold); color: var(--brown-dark); font-size: 58px; box-shadow: 0 14px 34px rgba(0,0,0,.4); }
+  .pill.wa svg { fill: var(--brown-dark); }
+  .pill.url { border: 3px solid var(--gold); color: var(--gold-light); font-family: var(--body); font-weight: 600; font-size: 34px; padding: 20px 44px; letter-spacing: .5px; }
+  .pill.url svg { width: 40px; height: 40px; fill: none; stroke: var(--gold-light); stroke-width: 2; }
+  .lead { font-family: var(--elegant); font-style: italic; font-size: 42px; color: var(--gold-pale); }
+  .cta h2 { font-family: var(--display); font-weight: 600; font-size: 84px; line-height: 1.05; color: var(--cream); }
+  .handle { font-size: 30px; letter-spacing: 2px; color: var(--cream-dark); font-weight: 500; }
+  .handle svg { width: 32px; height: 32px; fill: var(--gold); vertical-align: -6px; margin-right: 10px; }
+
+  .sticker-spot { display: inline-flex; align-items: center; justify-content: center; width: 640px; height: 150px; border: 4px dashed rgba(232,213,163,.55); border-radius: 30px;
+    font-family: var(--elegant); font-style: italic; font-size: 38px; color: rgba(232,213,163,.75); }
+  .arrow-down svg { width: 70px; height: 70px; stroke: var(--gold-light); fill: none; stroke-width: 2.2; }
+</style>
+</head>
+<body>
+
+<!-- 1 · CAPA -->
+<section class="slide dark cover" id="s1">
+  <div class="mosaic">
+    <img src="../../images/Capriccio/SalgadosVariados.jpg" alt="">
+    <img src="../../images/Capriccio/MorangoChocolate.jpg" alt="" style="object-position:center 35%">
+    <img src="../../images/Capriccio/BoloDoceLeite.jpg" alt="">
+  </div>
+  <div class="frame"></div>
+  <div class="center" style="top:480px">
+    <img class="logo" src="../../images/logo.png" alt="" style="width:500px">
+    <div class="big-title" style="margin-top:18px">Cardápio</div>
+    <div class="year">2026</div>
+    <div class="ornament" style="margin:26px 0 22px"><span></span><i></i><span></span></div>
+    <div class="tag">Salgados · Doces · Bolos</div>
+  </div>
+  <div class="center" style="bottom:86px">
+    <div class="swipe">Arraste para ver os preços <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+  </div>
+</section>
+
+<!-- 2 · SALGADOS 1/2 -->
+<section class="slide" id="s2">
+  <div class="band" style="height:120px"><img src="../../images/Capriccio/SalgadosVariados.jpg" alt="" style="object-position:center 30%"></div>
+  <div class="frame"></div>
+  <div class="body" style="padding-top:36px">
+    <div class="head"><div class="kicker">Valor por cento</div><h2>Salgados <small>1/2</small></h2><div class="ornament"><span></span><i></i><span></span></div></div>
+    <div class="list">
+      <div class="item"><span class="name">Barca de calabresa com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Barca de escarola com queijo</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+      <div class="item"><span class="name">Barca de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Bolinha de carne seca</span><span class="dots"></span><span class="price"><small>R$</small>210,00</span></div>
+      <div class="item"><span class="name">Bolinha de queijo mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+      <div class="item"><span class="name">Cigarrete de provolone</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      <div class="item"><span class="name">Cigarrete de queijo mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Coxinha de frango</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+      <div class="item"><span class="name">Coxinha de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Croquete de bacalhau (Porto)</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+      <div class="item"><span class="name">Croquete de carne</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Croquete de milho com mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>105,00</span></div>
+      <div class="item"><span class="name">Empada de camarão</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+      <div class="item"><span class="name">Empada de frango com palmito</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+      <div class="item"><span class="name">Empada de frango ou palmito</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Enroladinho de salsicha</span><span class="dots"></span><span class="price"><small>R$</small>95,00</span></div>
+      <div class="item"><span class="name">Esfiha de carne</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>@capricciosalgadosedoces</span><b>2 / 7</b></div>
+</section>
+
+<!-- 3 · SALGADOS 2/2 -->
+<section class="slide" id="s3">
+  
+  <div class="frame"></div>
+  <div class="body" style="padding-top:84px">
+    <div class="head"><div class="kicker">Valor por cento</div><h2>Salgados <small>2/2</small></h2><div class="ornament"><span></span><i></i><span></span></div></div>
+    <div class="list" style="margin-top:18px">
+      <div class="item"><span class="name">Folhado de maçã com bacon</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      <div class="item"><span class="name">Folhado de tomate seco / bacon / ameixa</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      <div class="item"><span class="name">Mini espetinho de frango com bacon</span><span class="dots"></span><span class="price"><small>R$</small>155,00</span></div>
+      <div class="item"><span class="name">Mini pizza</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+      <div class="item"><span class="name">Ouriço de mozzarella</span><span class="dots"></span><span class="price"><small>R$</small>125,00</span></div>
+      <div class="item"><span class="name">Pastel de peru c/ cream cheese no gergelim</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      <div class="item"><span class="name">Pastelzinho de ricota, presunto e passas</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+      <div class="item"><span class="name">Pastelzinho assado de palmito</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+      <div class="item"><span class="name">Quibe</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Quiche de alho-poró</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Risole de camarão</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+      <div class="item"><span class="name">Risole de carne</span><span class="dots"></span><span class="price"><small>R$</small>115,00</span></div>
+      <div class="item"><span class="name">Risole de catupiry, palmito ou presunto e queijo</span><span class="dots"></span><span class="price"><small>R$</small>100,00</span></div>
+      <div class="item"><span class="name">Trouxinha de ricota com tomate seco</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+      <div class="item"><span class="name">Trouxinha de frango com catupiry</span><span class="dots"></span><span class="price"><small>R$</small>135,00</span></div>
+    </div>
+    <div class="group" style="margin-top:20px">Mini lanches <em>por unidade</em></div>
+    <div class="item"><span class="name">X-Burger artesanal coquetel</span><span class="dots"></span><span class="price"><small>R$</small>2,75<em>un.</em></span></div>
+    <div class="item"><span class="name">Cachorro-quente coquetel</span><span class="dots"></span><span class="price"><small>R$</small>2,75<em>un.</em></span></div>
+  </div>
+  <div class="foot"><span>@capricciosalgadosedoces</span><b>3 / 7</b></div>
+</section>
+
+<!-- 4 · DOCES -->
+<section class="slide" id="s4">
+  <div class="band" style="height:250px; grid-template-columns: minmax(0,1fr) minmax(0,1fr);"><img src="../../images/Capriccio/MorangoChocolate.jpg" alt="" style="object-position:center 55%"><img src="../../images/Capriccio/Camafeu.jpg" alt=""></div>
+  <div class="frame"></div>
+  <div class="body">
+    <div class="head"><div class="kicker">Valor por cento</div><h2>Doces</h2><div class="ornament"><span></span><i></i><span></span></div></div>
+    <div class="group" style="margin-top:20px">Tradicionais</div>
+    <div class="item"><span class="name">Beijinho · Brigadeiro</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+    <div class="item"><span class="name">Bicho de pé · Romance</span><span class="dots"></span><span class="price"><small>R$</small>120,00</span></div>
+    <div class="item"><span class="name">Sensação · Cajuzinho · Casadinho</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+    <div class="item"><span class="name">Brigadeiro de leite Ninho</span><span class="dots"></span><span class="price"><small>R$</small>130,00</span></div>
+    <div class="item"><span class="name">Olho de sogra</span><span class="dots"></span><span class="price"><small>R$</small>150,00</span></div>
+    <div class="item"><span class="name">Docinho de churros</span><span class="dots"></span><span class="price"><small>R$</small>150,00</span></div>
+    <div class="group">Finos</div>
+    <div class="item"><span class="name">Tortinha de limão ou maracujá</span><span class="dots"></span><span class="price"><small>R$</small>210,00</span></div>
+    <div class="item"><span class="name">Damasco</span><span class="dots"></span><span class="price"><small>R$</small>220,00</span></div>
+    <div class="item"><span class="name">Frutas banhadas no chocolate</span><span class="dots"></span><span class="price"><small>R$</small>230,00</span></div>
+    <div class="item"><span class="name">Uva com beijinho e chocolate</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+    <div class="item"><span class="name">Camafeu</span><span class="dots"></span><span class="price"><small>R$</small>250,00</span></div>
+  </div>
+  <div class="foot"><span>@capricciosalgadosedoces</span><b>4 / 7</b></div>
+</section>
+
+<!-- 5 · BOLOS -->
+<section class="slide" id="s5">
+  <div class="band" style="height:200px; grid-template-columns: repeat(3, minmax(0,1fr));"><img src="../../images/Capriccio/BoloDoceLeite.jpg" alt=""><img src="../../images/Capriccio/BoloProdutos.jpg" alt=""><img src="../../images/Capriccio/ChcolateBrancoMorango.jpg" alt=""></div>
+  <div class="frame"></div>
+  <div class="body" style="padding-left:80px; padding-right:80px">
+    <div class="head"><div class="kicker">Valor por fatias</div><h2>Bolos</h2><div class="ornament"><span></span><i></i><span></span></div></div>
+    <table class="cakes">
+      <thead><tr><th>Sabor</th><th>20 f</th><th>40 f</th><th>60 f</th><th>80 f</th></tr></thead>
+      <tbody>
+        <tr><td>Ninho · Coco · Prestígio</td><td>130</td><td>200</td><td>270</td><td>330</td></tr>
+        <tr><td>Brigadeiro · Creme</td><td>130</td><td>200</td><td>270</td><td>330</td></tr>
+        <tr><td>Doce de leite</td><td>130</td><td>200</td><td>270</td><td>330</td></tr>
+        <tr><td>Trufado</td><td>150</td><td>234</td><td>318</td><td>390</td></tr>
+        <tr><td>Floresta negra</td><td>150</td><td>234</td><td>318</td><td>390</td></tr>
+        <tr><td>Casadinho</td><td>160</td><td>245</td><td>320</td><td>400</td></tr>
+        <tr><td>Doce de leite, nozes e Ninho</td><td>170</td><td>260</td><td>350</td><td>430</td></tr>
+        <tr class="sep"><td colspan="5">Acréscimos</td></tr>
+        <tr><td>Massa folhada</td><td>15</td><td>25</td><td>30</td><td>35</td></tr>
+        <tr><td>Frutas</td><td>15</td><td>25</td><td>30</td><td>35</td></tr>
+        <tr><td>Nozes</td><td>25</td><td>30</td><td>35</td><td>40</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Valores em R$ · f = fatias &nbsp;·&nbsp; Bolo salgado <b>R$ 75,00</b></p>
+  </div>
+  <div class="foot"><span>@capricciosalgadosedoces</span><b>5 / 7</b></div>
+</section>
+
+<!-- 6 · GALERIA -->
+<section class="slide dark" id="s6">
+  <div class="gallery">
+    <img src="../../images/Capriccio/Hamburguinho.jpg" alt="">
+    <img src="../../images/gallery-doces.png" alt="">
+    <img src="../../images/Capriccio/BodasNinho.jpg" alt="" style="object-position:center 70%">
+    <img src="../../images/Capriccio/BichoNinhoNutela.jpg" alt="">
+  </div>
+  <div class="frame"></div>
+  <div class="center" style="bottom:118px">
+    <div class="ornament" style="margin-bottom:26px"><span></span><i></i><span></span></div>
+    <div class="cta"><h2 style="font-size:70px">Feito à mão, do jeito<br>que a sua festa merece</h2></div>
+  </div>
+</section>
+
+<!-- 7 · CTA -->
+<section class="slide dark cta" id="s7">
+  <div class="frame"></div>
+  <div class="center" style="top:150px">
+    <img class="logo" src="../../images/logo.png" alt="" style="width:500px">
+    <h2 style="margin-top:34px">Faça sua<br>encomenda</h2>
+    <div class="ornament" style="margin:30px 0 44px"><span></span><i></i><span></span></div>
+    <div class="pill wa"><svg viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg>(14) 99651-4970</div>
+    <p class="lead" style="margin-top:52px">Cardápio completo, com fotos, no link da bio</p>
+    <div class="pill url" style="margin-top:22px"><svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>capriccio-peach.vercel.app/cardapio</div>
+  </div>
+  <div class="foot" style="position:absolute; left:0; right:0; bottom:40px; justify-content:center"><span>@capricciosalgadosedoces</span></div>
+</section>
+
+<!-- STORY (1080×1920) -->
+<section class="slide story dark cover" id="story">
+  <div class="mosaic" style="height:1020px">
+    <img src="../../images/Capriccio/SalgadosVariados.jpg" alt="">
+    <img src="../../images/Capriccio/MorangoChocolate.jpg" alt="" style="object-position:center 35%">
+    <img src="../../images/Capriccio/BoloDoceLeite.jpg" alt="">
+  </div>
+  <div class="center" style="top:820px">
+    <img class="logo" src="../../images/logo.png" alt="" style="width:600px">
+    <div class="big-title" style="margin-top:26px">Cardápio</div>
+    <div class="year">2026</div>
+    <div class="ornament" style="margin:30px 0 26px"><span></span><i></i><span></span></div>
+    <div class="tag">Salgados · Doces · Bolos</div>
+    <p class="lead" style="margin-top:70px; font-size:48px">Veja todos os preços e<br>faça sua encomenda</p>
+    <div class="arrow-down" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></svg></div>
+  </div>
+</section>
+
+</body>
+</html>
